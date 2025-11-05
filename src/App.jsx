@@ -7,6 +7,7 @@ import ProductDetailPage from './components/ProductDetailPage';
 import CartPage from './components/CartPage';
 import LoginPage from './components/LoginPage';
 import ProfilePage from "./components/ProfilePage";
+import OrdersPage from "./components/OrdersPage";
 import CheckoutPage from './components/CheckoutPage';
 import PaymentPage from './components/PaymentPage';
 import ConfirmationPage from './components/ConfirmationPage';
@@ -90,6 +91,13 @@ const ECommerceApp = () => {
       case 'profile':
         return (
           <ProfilePage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'orders':
+        return (
+          <OrdersPage
             onNavigate={handleNavigate}
           />
         );
