@@ -229,13 +229,68 @@
             "tax": 1139.9900000000002,
             "total": 6844.93
           }
+        },
+        {
+          "id": "CMD-47724273",
+          "date": "2025-11-05T13:02:04.273Z",
+          "items": [
+            {
+              "id": "4",
+              "name": "Montre Connectée Sport",
+              "price": 249.99,
+              "category": "Téléphonie & Tablette",
+              "rating": 4.3,
+              "stock": 30,
+              "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
+              ],
+              "description": "Montre connectée avec suivi santé, GPS et notifications.",
+              "features": [
+                "GPS intégré",
+                "Moniteur cardiaque",
+                "Étanche",
+                "7 jours autonomie"
+              ],
+              "reviews": [
+                {
+                  "user": "Alex R.",
+                  "rating": 4,
+                  "comment": "Pratique pour le sport"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "EL Bahri",
+            "lastName": "Omar",
+            "address": "123 Rue de la Paix, 75001 Paris, France",
+            "city": "kbisbikv",
+            "postalCode": "5522",
+            "country": "",
+            "phone": "+216 23 456 789"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 249.99,
+            "shipping": 4.99,
+            "tax": 49.998000000000005,
+            "total": 304.978
+          }
         }
       ],
       "favorites": [
-        "65",
         "14",
-        "1",
-        "2",
         "3",
         "4",
         "6"

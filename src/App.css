@@ -524,18 +524,18 @@ body {
   font-weight: 600;
 }
 
-.track{
+.track {
   height: 6px;
   width: 100%;
   border-radius: 4px
 }
 
-.thumb{
+.thumb {
   height: 20px;
   width: 20px;
   border-radius: 50%;
   background-color: #3b82f6;
-  box-shadow: 0 0 4px rgba(0,0,0,0.3)
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3)
 }
 
 .price-filter {
@@ -3323,6 +3323,7 @@ body {
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -3903,7 +3904,7 @@ body {
   color: #d1d5db;
 }
 
-.footer{
+.footer {
   background-color: #1f2937;
   color: white;
   height: 100px;
@@ -4664,10 +4665,10 @@ body {
     padding: 0.1rem 0.1rem;
   }
 
-  .pagination{
+  .pagination {
     gap: 2px;
   }
-  
+
   .product-header {
     flex-direction: row;
     align-items: flex-start;
