@@ -1,16 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Heart } from 'lucide-react';
 import StarRating from './StarRating';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const ProductCard = ({ product, onViewDetails }) => {
   const { addToCart } = useCart();
+  const { user, addToFavorites, isProductInFavorites } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(isProductInFavorites(product.id));
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
     addToCart(product);
   };
 
+  const handleWishlistClick = async (e) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      alert('Veuillez vous connecter pour ajouter aux favoris');
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await addToFavorites(product.id);
+    if (result.success) {
+      setIsFavorite(result.isFavorite);
+    } else {
+      alert(result.error);
+    }
+    setIsLoading(false);
+  };
 
   const handleCardClick = () => {
     onViewDetails(product);
@@ -24,8 +45,11 @@ const ProductCard = ({ product, onViewDetails }) => {
           alt={product.name}
         />
         <button 
+          className={`wishlist-btn ${isFavorite ? 'active' : ''} ${isLoading ? 'loading' : ''}`}
+          onClick={handleWishlistClick}
+          disabled={isLoading}
         >
-          <Heart size={18}  />
+          <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
       </div>
       <div className="product-info">

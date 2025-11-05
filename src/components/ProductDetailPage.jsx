@@ -3,11 +3,15 @@ import { ChevronLeft, Plus, Minus, Heart } from 'lucide-react';
 import StarRating from '../components/StarRating';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const ProductDetailPage = ({ product, onBack, products, onNavigate}) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { user, addToFavorites, isProductInFavorites } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(isProductInFavorites(product?.id));
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!product) return null;
 
@@ -19,6 +23,21 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate}) => {
     addToCart(product, quantity);
   };
 
+  const handleWishlistClick = async () => {
+    if (!user) {
+      alert('Veuillez vous connecter pour ajouter aux favoris');
+      return;
+    }
+
+    setIsLoading(true);
+    const result = await addToFavorites(product.id);
+    if (result.success) {
+      setIsFavorite(result.isFavorite);
+    } else {
+      alert(result.error);
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="product-detail-page">
@@ -59,8 +78,12 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate}) => {
               <div className="product-header">
                 <h1>{product.name}</h1>
                 <button 
+                  className={`wishlist-btn-header ${isFavorite ? 'active' : ''} ${isLoading ? 'loading' : ''}`}
+                  onClick={handleWishlistClick}
+                  disabled={isLoading}
+                  title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                 >
-                  <Heart size={24}  />
+                  <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
                 </button>
               </div>
               
