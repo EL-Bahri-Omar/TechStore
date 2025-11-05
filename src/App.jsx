@@ -6,6 +6,9 @@ import HomePage from './components/HomePage';
 import ProductDetailPage from './components/ProductDetailPage';
 import CartPage from './components/CartPage';
 import LoginPage from './components/LoginPage';
+import CheckoutPage from './components/CheckoutPage';
+import PaymentPage from './components/PaymentPage';
+import ConfirmationPage from './components/ConfirmationPage';
 import './App.css';
 
 const ECommerceApp = () => {
@@ -80,6 +83,29 @@ const ECommerceApp = () => {
         return (
           <LoginPage
             onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'checkout':
+        return (
+          <CheckoutPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'payment':
+        return (
+          <PaymentPage
+            onNavigate={handleNavigate}
+            orderData={selectedProductId}
+          />
+        );
+      
+      case 'confirmation':
+        return (
+          <ConfirmationPage
+            onNavigate={handleNavigate}
+            orderId={selectedProductId}
           />
         );
       

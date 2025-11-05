@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
@@ -12,6 +13,7 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const { user, updateProfile } = useAuth();
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -66,9 +68,74 @@ export const CartProvider = ({ children }) => {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
-  
+  const createOrder = async (orderData) => {
+    try {
+      const order = {
+        id: generateOrderId(),
+        date: new Date().toISOString(),
+        items: [...cart],
+        status: 'confirmed',
+        ...orderData
+      };
 
+      if (user) {
+        // User is logged in - save to user's orders
+        const userResponse = await fetch(`http://localhost:3001/users/${user.id}`);
+        const currentUser = await userResponse.json();
 
+        const updatedOrders = [...(currentUser.orders || []), order];
+
+        const updateResponse = await fetch(`http://localhost:3001/users/${user.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ orders: updatedOrders }),
+        });
+
+        if (updateResponse.ok) {
+          await updateProfile({ orders: updatedOrders });
+          clearCart();
+          return { success: true, orderId: order.id, isGuest: false };
+        }
+        
+        return { success: false, error: 'Erreur lors de la sauvegarde de la commande' };
+      } else {
+        // Guest user - save to guests collection
+        const guestOrder = {
+          ...order,
+          guestInfo: {
+            email: orderData.shippingAddress?.email || '',
+            firstName: orderData.shippingAddress?.firstName || '',
+            lastName: orderData.shippingAddress?.lastName || '',
+            phone: orderData.shippingAddress?.phone || ''
+          }
+        };
+
+        const guestResponse = await fetch('http://localhost:3001/guests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(guestOrder),
+        });
+
+        if (guestResponse.ok) {
+          clearCart();
+          return { success: true, orderId: order.id, isGuest: true };
+        }
+        
+        return { success: false, error: 'Erreur lors de la sauvegarde de la commande invité' };
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+      return { success: false, error: 'Erreur de connexion' };
+    }
+  };
+
+  const generateOrderId = () => {
+    return 'CMD-' + Date.now().toString().slice(-8);
+  };
 
   const value = {
     cart,
@@ -78,6 +145,7 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getCartItemsCount,
     getCartTotal,
+    createOrder
   };
 
   return (
