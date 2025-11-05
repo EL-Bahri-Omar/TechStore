@@ -9,6 +9,7 @@ import LoginPage from './components/LoginPage';
 import ProfilePage from "./components/ProfilePage";
 import OrdersPage from "./components/OrdersPage";
 import FavoritesPage from "./components/FavoritesPage";
+import AddressesPage from "./components/AddressesPage";
 import CheckoutPage from './components/CheckoutPage';
 import PaymentPage from './components/PaymentPage';
 import ConfirmationPage from './components/ConfirmationPage';
@@ -106,6 +107,13 @@ const ECommerceApp = () => {
       case 'favorites':
         return (
           <FavoritesPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'addresses':
+        return (
+          <AddressesPage
             onNavigate={handleNavigate}
           />
         );
