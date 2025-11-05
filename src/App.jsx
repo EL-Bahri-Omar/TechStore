@@ -6,6 +6,7 @@ import HomePage from './components/HomePage';
 import ProductDetailPage from './components/ProductDetailPage';
 import CartPage from './components/CartPage';
 import LoginPage from './components/LoginPage';
+import ProfilePage from "./components/ProfilePage";
 import CheckoutPage from './components/CheckoutPage';
 import PaymentPage from './components/PaymentPage';
 import ConfirmationPage from './components/ConfirmationPage';
@@ -82,6 +83,13 @@ const ECommerceApp = () => {
       case 'login':
         return (
           <LoginPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'profile':
+        return (
+          <ProfilePage
             onNavigate={handleNavigate}
           />
         );
