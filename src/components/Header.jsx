@@ -1,24 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ShoppingCart, User, Menu, X, Search, ChevronDown } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
 import CategoriesNav from './CategoriesNav';
 import techStoreLogo from '../assets/techstore.png';
 
 const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selectedCategory, onCategoryChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const { getCartItemsCount } = useCart();
 
+  const cartItemsCount = getCartItemsCount();
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setUserDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
 
 
@@ -68,20 +59,34 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
               className="cart-icon"
             >
               <ShoppingCart size={26} />
-              
+              {cartItemsCount > 0 && (
+                <span className="cart-badge">
+                  {cartItemsCount}
+                </span>
+              )}
             </button>
-
-            <button
+            
+            
+              <button
                 onClick={() => onNavigate('login')}
                 className="login-icon"
               >
                 <User size={26} />
               </button>
-            
           </div>
         </div>
 
-        
+        {mobileMenuOpen && (
+          <div className="mobile-menu">
+            <button
+              onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
+              className="mobile-menu-item"
+            >
+              Accueil
+            </button>
+            
+          </div>
+        )}
       </div>
 
       {/* Categories Navbar - shown only on specific pages */}

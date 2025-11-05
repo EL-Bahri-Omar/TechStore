@@ -1,9 +1,15 @@
+import React from 'react';
 import { Heart } from 'lucide-react';
 import StarRating from './StarRating';
+import { useCart } from '../contexts/CartContext';
 
 const ProductCard = ({ product, onViewDetails }) => {
+  const { addToCart } = useCart();
 
-
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    addToCart(product);
+  };
 
 
   const handleCardClick = () => {
@@ -18,7 +24,6 @@ const ProductCard = ({ product, onViewDetails }) => {
           alt={product.name}
         />
         <button 
-          className="wishlist-btn "
         >
           <Heart size={18}  />
         </button>
@@ -37,6 +42,7 @@ const ProductCard = ({ product, onViewDetails }) => {
         </div>
         <div className="product-actions">
           <button
+            onClick={handleAddToCart}
             className="btn btn-primary add-to-cart-btn"
           >
             Ajouter

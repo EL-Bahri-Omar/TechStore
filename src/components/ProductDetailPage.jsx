@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { ChevronLeft, Plus, Minus, Heart } from 'lucide-react';
 import StarRating from '../components/StarRating';
 import ProductCard from '../components/ProductCard';
+import { useCart } from '../contexts/CartContext';
 
 const ProductDetailPage = ({ product, onBack, products, onNavigate}) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   if (!product) return null;
 
@@ -13,7 +15,9 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate}) => {
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
-
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+  };
 
 
   return (
@@ -54,7 +58,10 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate}) => {
             <div className="product-info">
               <div className="product-header">
                 <h1>{product.name}</h1>
-                
+                <button 
+                >
+                  <Heart size={24}  />
+                </button>
               </div>
               
               <div className="rating-section">
@@ -100,6 +107,7 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate}) => {
                   </button>
                 </div>
                 <button
+                  onClick={handleAddToCart}
                   className="btn btn-primary add-to-cart-btn"
                 >
                   Ajouter au panier

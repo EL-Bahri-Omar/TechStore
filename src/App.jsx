@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { CartProvider } from './contexts/CartContext';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import ProductDetailPage from './components/ProductDetailPage';
+import CartPage from './components/CartPage';
 import './App.css';
 
 const ECommerceApp = () => {
@@ -65,6 +67,71 @@ const ECommerceApp = () => {
           />
         );
       
+      case 'cart':
+        return (
+          <CartPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'login':
+        return (
+          <LoginPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'profile':
+        return (
+          <ProfilePage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'orders':
+        return (
+          <OrdersPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'favorites':
+        return (
+          <FavoritesPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'addresses':
+        return (
+          <AddressesPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'checkout':
+        return (
+          <CheckoutPage
+            onNavigate={handleNavigate}
+          />
+        );
+      
+      case 'payment':
+        return (
+          <PaymentPage
+            onNavigate={handleNavigate}
+            orderData={selectedProductId}
+          />
+        );
+      
+      case 'confirmation':
+        return (
+          <ConfirmationPage
+            onNavigate={handleNavigate}
+            orderId={selectedProductId}
+          />
+        );
+      
       default:
         return (
           <HomePage
@@ -79,6 +146,7 @@ const ECommerceApp = () => {
   };
 
   return (
+      <CartProvider>
         <div className="app">
           <Header
             onNavigate={handleNavigate}
@@ -101,6 +169,7 @@ const ECommerceApp = () => {
             </div>
           </footer>
         </div>
+      </CartProvider>
   );
 };
 
