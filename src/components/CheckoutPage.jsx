@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { ChevronLeft, CreditCard, Truck, MapPin, Shield } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useAlert } from '../contexts/AlertContext';
+import { AlertMessages, getFieldError } from '../utils/alertMessages';
 
 const CheckoutPage = ({ onNavigate }) => {
   const { cart, getCartTotal } = useCart();
   const { user } = useAuth();
+  const { error: showError } = useAlert();
   
   const [shippingAddress, setShippingAddress] = useState({
     firstName: user?.firstName || '',
@@ -17,6 +20,7 @@ const CheckoutPage = ({ onNavigate }) => {
     phone: user?.phone || ''
   });
 
+  const [errors, setErrors] = useState({});
   const [shippingMethod, setShippingMethod] = useState('standard');
   const [paymentMethod, setPaymentMethod] = useState('card');
 
@@ -68,16 +72,25 @@ const CheckoutPage = ({ onNavigate }) => {
     }
   ];
 
-  const subtotal = getCartTotal();
-  const shippingCost = shippingMethods.find(method => method.id === shippingMethod)?.price || 0;
-  const tax = subtotal * 0.2;
-  const total = subtotal + shippingCost + tax;
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!shippingAddress.firstName.trim()) newErrors.firstName = getFieldError('firstName');
+    if (!shippingAddress.lastName.trim()) newErrors.lastName = getFieldError('lastName');
+    if (!shippingAddress.address.trim()) newErrors.address = getFieldError('address');
+    if (!shippingAddress.city.trim()) newErrors.city = getFieldError('city');
+    if (!shippingAddress.postalCode.trim()) newErrors.postalCode = getFieldError('postalCode');
+    if (!shippingAddress.country.trim()) newErrors.country = getFieldError('country');
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!shippingAddress.firstName || !shippingAddress.lastName || !shippingAddress.address || 
-        !shippingAddress.city || !shippingAddress.postalCode) {
-      alert('Veuillez remplir tous les champs obligatoires');
+    e?.preventDefault();
+    
+    if (!validateForm()) {
+      showError(AlertMessages.SHIPPING_INFO_REQUIRED);
       return;
     }
     
@@ -87,6 +100,13 @@ const CheckoutPage = ({ onNavigate }) => {
       paymentMethod,
       orderSummary: { subtotal, shipping: shippingCost, tax, total }
     });
+  };
+
+  const handleInputChange = (field, value) => {
+    setShippingAddress(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   if (cart.length === 0) {
@@ -109,10 +129,14 @@ const CheckoutPage = ({ onNavigate }) => {
     );
   }
 
+  const subtotal = getCartTotal();
+  const shippingCost = shippingMethods.find(method => method.id === shippingMethod)?.price || 0;
+  const tax = subtotal * 0.2;
+  const total = subtotal + shippingCost + tax;
+
   return (
     <div className="checkout-page">
       <div className="checkout-container">
-        {/* Header avec étapes */}
         <div className="checkout-header">
           <button
             onClick={() => onNavigate('cart')}
@@ -149,7 +173,6 @@ const CheckoutPage = ({ onNavigate }) => {
         </div>
 
         <div className="checkout-content">
-          {/* Formulaire principal */}
           <div className="checkout-form">
             {/* Adresse de livraison */}
             <div className="checkout-section">
@@ -177,13 +200,16 @@ const CheckoutPage = ({ onNavigate }) => {
                     <input
                       type={field.type}
                       value={shippingAddress[field.name]}
-                      onChange={(e) => setShippingAddress(prev => ({
-                        ...prev,
-                        [field.name]: e.target.value
-                      }))}
-                      className="form-input-enhanced"
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      className={`form-input-enhanced ${errors[field.name] ? 'error' : ''}`}
                       required={field.required}
                     />
+                    {errors[field.name] && (
+                      <p className="field-error">
+                        <span className="field-error-icon">⚠</span>
+                        {errors[field.name]}
+                      </p>
+                    )}
                   </div>
                 ))}
                 
@@ -193,49 +219,40 @@ const CheckoutPage = ({ onNavigate }) => {
                   </label>
                   <textarea
                     value={shippingAddress.address}
-                    onChange={(e) => setShippingAddress(prev => ({
-                      ...prev,
-                      address: e.target.value
-                    }))}
-                    className="form-input-enhanced"
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    className={`form-input-enhanced ${errors.address ? 'error' : ''}`}
                     rows="3"
                     required
                   />
+                  {errors.address && (
+                    <p className="field-error">
+                      <span className="field-error-icon">⚠</span>
+                      {errors.address}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="form-group-enhanced">
                   <label>
-                    Pays
+                    Pays *
                   </label>
                   <select
                     value={shippingAddress.country}
-                    onChange={(e) => setShippingAddress(prev => ({
-                      ...prev,
-                      country: e.target.value
-                    }))}
-                    className="form-input-enhanced"
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    className={`form-input-enhanced ${errors.country ? 'error' : ''}`}
                   >
+                    <option value="">Sélectionnez un pays</option>
                     <option value="Tunisie">Tunisie</option>
                     <option value="Algérie">Algérie</option>
                     <option value="Maroc">Maroc</option>
-                    <option value="Libye">Libye</option>
-                    <option value="Égypte">Égypte</option>
-                    <option value="Arabie Saoudite">Arabie Saoudite</option>
-                    <option value="Émirats Arabes Unis">Émirats Arabes Unis</option>
-                    <option value="Qatar">Qatar</option>
-                    <option value="Koweït">Koweït</option>
-                    <option value="Bahreïn">Bahreïn</option>
-                    <option value="Oman">Oman</option>
-                    <option value="Jordanie">Jordanie</option>
-                    <option value="Liban">Liban</option>
-                    <option value="Turquie">Turquie</option>
-                    <option value="Palestine">Palestine</option>
-                    <option value="Soudan">Soudan</option>
-                    <option value="Mauritanie">Mauritanie</option>
                     <option value="France">France</option>
-                    <option value="Belgique">Belgique</option>
-                    <option value="Suisse">Suisse</option>
                   </select>
+                  {errors.country && (
+                    <p className="field-error">
+                      <span className="field-error-icon">⚠</span>
+                      {errors.country}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="form-group-enhanced">
@@ -245,10 +262,7 @@ const CheckoutPage = ({ onNavigate }) => {
                   <input
                     type="tel"
                     value={shippingAddress.phone}
-                    onChange={(e) => setShippingAddress(prev => ({
-                      ...prev,
-                      phone: e.target.value
-                    }))}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
                     className="form-input-enhanced"
                   />
                 </div>
@@ -407,15 +421,15 @@ const CheckoutPage = ({ onNavigate }) => {
                 </div>
               </div>
 
+              {/* Moved the payment button here */}
               <button 
-                type="submit" 
                 onClick={handleSubmit}
                 className="btn-primary-xl"
               >
                 Procéder au paiement
                 <CreditCard size={20} />
               </button>
-              
+
               <div className="security-notice">
                 <Shield size={16} />
                 <span>Paiement 100% sécurisé</span>

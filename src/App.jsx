@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { AlertProvider } from './contexts/AlertContext';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import ProductDetailPage from './components/ProductDetailPage';
@@ -155,32 +156,34 @@ const ECommerceApp = () => {
   };
 
   return (
-    <AuthProvider>
-      <CartProvider>
-        <div className="app">
-          <Header
-            onNavigate={handleNavigate}
-            currentPage={currentPage}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategory={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-          />
+    <AlertProvider>
+      <AuthProvider>
+        <CartProvider>
+          <div className="app">
+            <Header
+              onNavigate={handleNavigate}
+              currentPage={currentPage}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+            />
 
-          <main>
-            {renderCurrentPage()}
-          </main>
+            <main>
+              {renderCurrentPage()}
+            </main>
 
-          {/* Footer */}
-          <footer className="footer">
-            <div className="container text-center">
-              <p>© 2025 TechStore - Tous droits réservés</p>
-              <p>Application e-commerce moderne et responsive</p>
-            </div>
-          </footer>
-        </div>
-      </CartProvider>
-    </AuthProvider>
+            {/* Footer */}
+            <footer className="footer">
+              <div className="container text-center">
+                <p>© 2025 TechStore - Tous droits réservés</p>
+                <p>Application e-commerce moderne et responsive</p>
+              </div>
+            </footer>
+          </div>
+        </CartProvider>
+      </AuthProvider>
+    </AlertProvider>
   );
 };
 

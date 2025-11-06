@@ -1,75 +1,100 @@
 import React, { useState } from 'react';
 import { Heart } from 'lucide-react';
-import StarRating from './StarRating';
-import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import { useAlert } from '../contexts/AlertContext';
+import { AlertMessages } from '../utils/alertMessages';
 
 const ProductCard = ({ product, onViewDetails }) => {
-  const { addToCart } = useCart();
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const { user, addToFavorites, isProductInFavorites } = useAuth();
-  const [isFavorite, setIsFavorite] = useState(isProductInFavorites(product.id));
-  const [isLoading, setIsLoading] = useState(false);
+  const { addToCart } = useCart();
+  const { success, error: showError, info, warning } = useAlert();
+
+  const isFavorite = isProductInFavorites(product.id);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    addToCart(product);
-  };
-
-  const handleWishlistClick = async (e) => {
-    e.stopPropagation();
     
-    if (!user) {
-      alert('Veuillez vous connecter pour ajouter aux favoris');
+    if (product.stock === 0) {
+      warning(AlertMessages.OUT_OF_STOCK);
       return;
     }
 
-    setIsLoading(true);
-    const result = await addToFavorites(product.id);
-    if (result.success) {
-      setIsFavorite(result.isFavorite);
-    } else {
-      alert(result.error);
-    }
-    setIsLoading(false);
+    addToCart(product, 1);
+    success(AlertMessages.ADD_TO_CART_SUCCESS);
   };
 
-  const handleCardClick = () => {
-    onViewDetails(product);
+  const handleWishlistToggle = async (e) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      info(AlertMessages.FAVORITES_LOGIN_REQUIRED);
+      return;
+    }
+
+    setIsWishlistLoading(true);
+    const result = await addToFavorites(product.id);
+    
+    if (result.success) {
+      success(result.message);
+    } else {
+      showError(result.error);
+    }
+    
+    setIsWishlistLoading(false);
   };
 
   return (
-    <div className="product-card" onClick={handleCardClick}>
+    <div className="product-card" onClick={onViewDetails}>
       <div className="product-image">
-        <img
-          src={product.image}
-          alt={product.name}
-        />
-        <button 
-          className={`wishlist-btn ${isFavorite ? 'active' : ''} ${isLoading ? 'loading' : ''}`}
-          onClick={handleWishlistClick}
-          disabled={isLoading}
+        <img src={product.image} alt={product.name} />
+        <button
+          onClick={handleWishlistToggle}
+          className={`wishlist-btn ${isFavorite ? 'active' : ''} ${isWishlistLoading ? 'loading' : ''}`}
+          disabled={isWishlistLoading}
+          title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
         >
-          <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+          <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
+        {product.stock === 0 && (
+          <div className="out-of-stock-badge">
+            Rupture de stock
+          </div>
+        )}
       </div>
+      
       <div className="product-info">
-        <h3 className="product-title">
-          {product.name}
-        </h3>
+        <h3 className="product-title">{product.name}</h3>
+        
         <div className="rating-container">
-          <StarRating rating={product.rating} size={14} />
-          <span className="rating-text">({product.rating})</span>
+          <div className="star-rating">
+            {[...Array(5)].map((_, i) => (
+              <span
+                key={i}
+                className={i < Math.floor(product.rating) ? 'star-filled' : 'star-empty'}
+              >
+                ★
+              </span>
+            ))}
+          </div>
+          <span className="rating-text">({product.reviewCount})</span>
         </div>
+
         <div className="product-details">
           <span className="product-price">{product.price}€</span>
-          <span className="product-stock">{product.stock} en stock</span>
+          <span className={`product-stock ${product.stock === 0 ? 'out-of-stock' : ''}`}>
+            {product.stock > 0 ? `${product.stock} en stock` : 'Rupture'}
+          </span>
         </div>
+
         <div className="product-actions">
           <button
             onClick={handleAddToCart}
-            className="btn btn-primary add-to-cart-btn"
+            className="btn btn-primary"
+            disabled={product.stock === 0}
           >
-            Ajouter
+            {product.stock === 0 ? 'Indisponible' : 'Ajouter au panier'}
           </button>
         </div>
       </div>

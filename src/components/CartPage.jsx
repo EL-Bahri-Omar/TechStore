@@ -1,11 +1,37 @@
 import React from 'react';
 import { ShoppingCart, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useAlert } from '../contexts/AlertContext';
+import { AlertMessages } from '../utils/alertMessages';
 
 const CartPage = ({ onNavigate }) => {
-  const { cart, updateQuantity, removeItem, getCartTotal, getCartItemsCount } = useCart();
+  const { cart, updateQuantity, removeItem, getCartTotal, getCartItemsCount, clearCart } = useCart();
+  const { success, error: showError } = useAlert();
+
+  const handleUpdateQuantity = (productId, newQuantity) => {
+    updateQuantity(productId, newQuantity);
+    if (newQuantity === 0) {
+      success(AlertMessages.REMOVE_FROM_CART_SUCCESS);
+    } else {
+      success(AlertMessages.CART_UPDATE_SUCCESS);
+    }
+  };
+
+  const handleRemoveItem = (productId) => {
+    removeItem(productId);
+    success(AlertMessages.REMOVE_FROM_CART_SUCCESS);
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    success(AlertMessages.CART_CLEAR_SUCCESS);
+  };
 
   const handleProceedToCheckout = () => {
+    if (cart.length === 0) {
+      showError(AlertMessages.CART_EMPTY_ERROR);
+      return;
+    }
     onNavigate('checkout');
   };
 
@@ -38,7 +64,6 @@ const CartPage = ({ onNavigate }) => {
         <h1 className="page-title mb-8">Mon Panier</h1>
         
         <div className="cart-layout">
-          {/* Cart Items Section */}
           <div className="cart-items-section">
             {cart.map((item) => (
               <div key={item.id} className="cart-item">
@@ -54,7 +79,7 @@ const CartPage = ({ onNavigate }) => {
                     <div className="cart-item-controls">
                       <div className="quantity-control">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                           className="quantity-btn"
                           disabled={item.quantity <= 1}
                         >
@@ -62,14 +87,14 @@ const CartPage = ({ onNavigate }) => {
                         </button>
                         <span className="quantity-display">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                           className="quantity-btn"
                         >
                           <Plus size={16} />
                         </button>
                       </div>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => handleRemoveItem(item.id)}
                         className="remove-btn"
                       >
                         <Trash2 size={16} />
@@ -83,9 +108,18 @@ const CartPage = ({ onNavigate }) => {
                 </div>
               </div>
             ))}
+            
+            <div className="cart-actions">
+              <button
+                onClick={handleClearCart}
+                className="clear-cart-btn"
+              >
+                <Trash2 size={16} />
+                Vider le panier
+              </button>
+            </div>
           </div>
 
-          {/* Cart Summary Section */}
           <div className="cart-summary">
             <div className="summary-card">
               <h2>Résumé de la commande</h2>

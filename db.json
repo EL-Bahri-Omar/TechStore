@@ -291,9 +291,10 @@
       ],
       "favorites": [
         "14",
-        "3",
         "4",
-        "6"
+        "6",
+        "1",
+        "2"
       ],
       "addresses": [
         "123 Rue de la Paix, 75001 Paris, France"
@@ -702,6 +703,668 @@
       "addresses": [
         "Rades Medina, Ben Arous, Tunis"
       ]
+    },
+    {
+      "id": "1762350442545",
+      "firstName": "Ayari",
+      "lastName": "Wassim",
+      "email": "wassim@gmail.com",
+      "password": "wassim1234",
+      "confirmPassword": "wassim1234",
+      "address": "Tunis",
+      "createdAt": "2025-11-05T13:47:22.545Z",
+      "orders": [
+        {
+          "id": "CMD-50651743",
+          "date": "2025-11-05T13:50:51.743Z",
+          "items": [
+            {
+              "id": "3",
+              "name": "Casque Audio Sans Fil",
+              "price": 199.99,
+              "category": "Audio",
+              "rating": 4.6,
+              "stock": 25,
+              "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"
+              ],
+              "description": "Casque Bluetooth avec réduction de bruit active, autonomie 30h.",
+              "features": [
+                "Bluetooth 5.0",
+                "Réduction bruit",
+                "30h autonomie",
+                "Pliable"
+              ],
+              "reviews": [
+                {
+                  "user": "Thomas B.",
+                  "rating": 5,
+                  "comment": "Son incroyable!"
+                },
+                {
+                  "user": "Laura M.",
+                  "rating": 4,
+                  "comment": "Très confortable"
+                }
+              ],
+              "quantity": 2
+            },
+            {
+              "id": "4",
+              "name": "Montre Connectée Sport",
+              "price": 249.99,
+              "category": "Téléphonie & Tablette",
+              "rating": 4.3,
+              "stock": 30,
+              "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
+              ],
+              "description": "Montre connectée avec suivi santé, GPS et notifications.",
+              "features": [
+                "GPS intégré",
+                "Moniteur cardiaque",
+                "Étanche",
+                "7 jours autonomie"
+              ],
+              "reviews": [
+                {
+                  "user": "Alex R.",
+                  "rating": 4,
+                  "comment": "Pratique pour le sport"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "gvgsgvr",
+            "postalCode": "5447",
+            "country": "Algérie",
+            "phone": "81654"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 649.97,
+            "shipping": 4.99,
+            "tax": 129.994,
+            "total": 784.9540000000001
+          }
+        },
+        {
+          "id": "CMD-52901660",
+          "date": "2025-11-05T14:28:21.660Z",
+          "items": [
+            {
+              "id": "3",
+              "name": "Casque Audio Sans Fil",
+              "price": 199.99,
+              "category": "Audio",
+              "rating": 4.6,
+              "stock": 25,
+              "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"
+              ],
+              "description": "Casque Bluetooth avec réduction de bruit active, autonomie 30h.",
+              "features": [
+                "Bluetooth 5.0",
+                "Réduction bruit",
+                "30h autonomie",
+                "Pliable"
+              ],
+              "reviews": [
+                {
+                  "user": "Thomas B.",
+                  "rating": 5,
+                  "comment": "Son incroyable!"
+                },
+                {
+                  "user": "Laura M.",
+                  "rating": 4,
+                  "comment": "Très confortable"
+                }
+              ],
+              "quantity": 2
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "fdvfdv",
+            "postalCode": "5415",
+            "country": "Algérie",
+            "phone": "54515525"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 399.98,
+            "shipping": 4.99,
+            "tax": 79.99600000000001,
+            "total": 484.966
+          }
+        },
+        {
+          "id": "CMD-53979677",
+          "date": "2025-11-05T14:46:19.677Z",
+          "items": [
+            {
+              "id": "4",
+              "name": "Montre Connectée Sport",
+              "price": 249.99,
+              "category": "Téléphonie & Tablette",
+              "rating": 4.3,
+              "stock": 30,
+              "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
+              ],
+              "description": "Montre connectée avec suivi santé, GPS et notifications.",
+              "features": [
+                "GPS intégré",
+                "Moniteur cardiaque",
+                "Étanche",
+                "7 jours autonomie"
+              ],
+              "reviews": [
+                {
+                  "user": "Alex R.",
+                  "rating": 4,
+                  "comment": "Pratique pour le sport"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "vcfbfgbfg",
+            "postalCode": "62415",
+            "country": "Maroc",
+            "phone": "5424"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 249.99,
+            "shipping": 4.99,
+            "tax": 49.998000000000005,
+            "total": 304.978
+          }
+        },
+        {
+          "id": "CMD-54101655",
+          "date": "2025-11-05T14:48:21.655Z",
+          "items": [
+            {
+              "id": "3",
+              "name": "Casque Audio Sans Fil",
+              "price": 199.99,
+              "category": "Audio",
+              "rating": 4.6,
+              "stock": 25,
+              "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"
+              ],
+              "description": "Casque Bluetooth avec réduction de bruit active, autonomie 30h.",
+              "features": [
+                "Bluetooth 5.0",
+                "Réduction bruit",
+                "30h autonomie",
+                "Pliable"
+              ],
+              "reviews": [
+                {
+                  "user": "Thomas B.",
+                  "rating": 5,
+                  "comment": "Son incroyable!"
+                },
+                {
+                  "user": "Laura M.",
+                  "rating": 4,
+                  "comment": "Très confortable"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "csdvcdfsvf",
+            "postalCode": "525422",
+            "country": "Maroc",
+            "phone": "254452"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 199.99,
+            "shipping": 4.99,
+            "tax": 39.998000000000005,
+            "total": 244.978
+          }
+        },
+        {
+          "id": "CMD-54286225",
+          "date": "2025-11-05T14:51:26.225Z",
+          "items": [
+            {
+              "id": "2",
+              "name": "Laptop Pro 15",
+              "price": 1299.99,
+              "category": "informatique",
+              "rating": 4.8,
+              "stock": 8,
+              "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
+                "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400"
+              ],
+              "description": "Ordinateur portable professionnel avec processeur Intel i7, 16GB RAM et écran Retina.",
+              "features": [
+                "Intel i7",
+                "16GB RAM",
+                "512GB SSD",
+                "Écran 15.6\" 4K"
+              ],
+              "reviews": [
+                {
+                  "user": "Sophie L.",
+                  "rating": 5,
+                  "comment": "Parfait pour le travail!"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "fgrjgbvfi",
+            "postalCode": "515",
+            "country": "Algérie",
+            "phone": "24521555"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 1299.99,
+            "shipping": 4.99,
+            "tax": 259.998,
+            "total": 1564.978
+          }
+        },
+        {
+          "id": "CMD-54340450",
+          "date": "2025-11-05T14:52:20.450Z",
+          "items": [
+            {
+              "id": "1",
+              "name": "Smartphone XPro Max",
+              "price": 899.99,
+              "category": "Téléphonie & Tablette",
+              "rating": 4.5,
+              "stock": 15,
+              "image": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+                "https://images.unsplash.com/photo-1592286927505-c8d6f41e4e5f?w=400",
+                "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400"
+              ],
+              "description": "Smartphone dernière génération avec écran OLED 6.7 pouces, processeur ultra-rapide et appareil photo 108MP.",
+              "features": [
+                "Écran OLED 6.7\"",
+                "128GB Storage",
+                "5G",
+                "Batterie 5000mAh"
+              ],
+              "reviews": [
+                {
+                  "user": "Marie D.",
+                  "rating": 5,
+                  "comment": "Excellent téléphone, très rapide!"
+                },
+                {
+                  "user": "Jean P.",
+                  "rating": 4,
+                  "comment": "Bon rapport qualité-prix"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "k,,njbhgvcffcghbj",
+            "postalCode": "85485",
+            "country": "Tunisie",
+            "phone": "55546565"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 899.99,
+            "shipping": 4.99,
+            "tax": 179.99800000000002,
+            "total": 1084.978
+          }
+        },
+        {
+          "id": "CMD-54487745",
+          "date": "2025-11-05T14:54:47.745Z",
+          "items": [
+            {
+              "id": "2",
+              "name": "Laptop Pro 15",
+              "price": 1299.99,
+              "category": "informatique",
+              "rating": 4.8,
+              "stock": 8,
+              "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
+                "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400"
+              ],
+              "description": "Ordinateur portable professionnel avec processeur Intel i7, 16GB RAM et écran Retina.",
+              "features": [
+                "Intel i7",
+                "16GB RAM",
+                "512GB SSD",
+                "Écran 15.6\" 4K"
+              ],
+              "reviews": [
+                {
+                  "user": "Sophie L.",
+                  "rating": 5,
+                  "comment": "Parfait pour le travail!"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "tfyguhijjibuhvd",
+            "postalCode": "5455586",
+            "country": "Tunisie",
+            "phone": "8545"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 1299.99,
+            "shipping": 4.99,
+            "tax": 259.998,
+            "total": 1564.978
+          }
+        },
+        {
+          "id": "CMD-56235042",
+          "date": "2025-11-05T15:23:55.042Z",
+          "items": [
+            {
+              "id": "8",
+              "name": "Clavier Mécanique RGB",
+              "price": 129.99,
+              "category": "Accessoires",
+              "rating": 4.6,
+              "stock": 22,
+              "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400"
+              ],
+              "description": "Clavier gaming mécanique avec rétroéclairage RGB personnalisable.",
+              "features": [
+                "Switches mécaniques",
+                "RGB",
+                "Anti-ghosting",
+                "Repose-poignet"
+              ],
+              "reviews": [
+                {
+                  "user": "Lucas G.",
+                  "rating": 5,
+                  "comment": "Parfait pour gamer!"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "cdscdsc",
+            "postalCode": "15655",
+            "country": "Algérie",
+            "phone": "561665565"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 129.99,
+            "shipping": 4.99,
+            "tax": 25.998000000000005,
+            "total": 160.978
+          }
+        },
+        {
+          "id": "CMD-57661436",
+          "date": "2025-11-05T15:47:41.436Z",
+          "items": [
+            {
+              "id": "3",
+              "name": "Casque Audio Sans Fil",
+              "price": 199.99,
+              "category": "Audio",
+              "rating": 4.6,
+              "stock": 25,
+              "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"
+              ],
+              "description": "Casque Bluetooth avec réduction de bruit active, autonomie 30h.",
+              "features": [
+                "Bluetooth 5.0",
+                "Réduction bruit",
+                "30h autonomie",
+                "Pliable"
+              ],
+              "reviews": [
+                {
+                  "user": "Thomas B.",
+                  "rating": 5,
+                  "comment": "Son incroyable!"
+                },
+                {
+                  "user": "Laura M.",
+                  "rating": 4,
+                  "comment": "Très confortable"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": ",sfgfhn,jhhjhg",
+            "postalCode": "52442",
+            "country": "Algérie",
+            "phone": "572437"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 199.99,
+            "shipping": 4.99,
+            "tax": 39.998000000000005,
+            "total": 244.978
+          }
+        },
+        {
+          "id": "CMD-58089943",
+          "date": "2025-11-05T15:54:49.943Z",
+          "items": [
+            {
+              "id": "3",
+              "name": "Casque Audio Sans Fil",
+              "price": 199.99,
+              "category": "Audio",
+              "rating": 4.6,
+              "stock": 25,
+              "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+              "images": [
+                "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"
+              ],
+              "description": "Casque Bluetooth avec réduction de bruit active, autonomie 30h.",
+              "features": [
+                "Bluetooth 5.0",
+                "Réduction bruit",
+                "30h autonomie",
+                "Pliable"
+              ],
+              "reviews": [
+                {
+                  "user": "Thomas B.",
+                  "rating": 5,
+                  "comment": "Son incroyable!"
+                },
+                {
+                  "user": "Laura M.",
+                  "rating": 4,
+                  "comment": "Très confortable"
+                }
+              ],
+              "quantity": 1
+            }
+          ],
+          "status": "confirmed",
+          "shippingAddress": {
+            "firstName": "Ayari",
+            "lastName": "Wassim",
+            "address": "Tunis",
+            "city": "fgfhgjjhg",
+            "postalCode": "254",
+            "country": "Tunisie",
+            "phone": "52243"
+          },
+          "shippingMethod": {
+            "id": "standard",
+            "name": "Livraison Standard",
+            "price": 4.99,
+            "duration": "3-5 jours ouvrables",
+            "icon": {},
+            "color": "shipping-method-standard"
+          },
+          "paymentMethod": "card",
+          "orderSummary": {
+            "subtotal": 199.99,
+            "shipping": 4.99,
+            "tax": 39.998000000000005,
+            "total": 244.978
+          }
+        }
+      ],
+      "favorites": [
+        "2",
+        "1",
+        "5"
+      ],
+      "addresses": [
+        "Tunis"
+      ],
+      "phone": ""
     }
   ],
   "guests": [

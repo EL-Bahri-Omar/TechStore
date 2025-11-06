@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { ChevronLeft, Shield, CheckCircle, CreditCard, Lock } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useAlert } from '../contexts/AlertContext';
+import { AlertMessages } from '../utils/alertMessages';
 
 const PaymentPage = ({ onNavigate, orderData }) => {
   const { cart, createOrder } = useCart();
   const { user } = useAuth();
+  const { error: showError, success: showSuccess } = useAlert();
   
   const [cardDetails, setCardDetails] = useState({
     number: '',
@@ -13,15 +16,45 @@ const PaymentPage = ({ onNavigate, orderData }) => {
     expiry: '',
     cvv: ''
   });
-  
+
+  const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
+  const validateCardDetails = () => {
+    const newErrors = {};
     
-    if (!cardDetails.number || !cardDetails.name || !cardDetails.expiry || !cardDetails.cvv) {
-      alert('Veuillez remplir tous les champs de carte');
+    if (!cardDetails.number.trim()) {
+      newErrors.number = 'Le numéro de carte est requis';
+    } else if (cardDetails.number.replace(/\s/g, '').length !== 16) {
+      newErrors.number = 'Le numéro de carte doit contenir 16 chiffres';
+    }
+    
+    if (!cardDetails.name.trim()) {
+      newErrors.name = 'Le nom sur la carte est requis';
+    }
+    
+    if (!cardDetails.expiry.trim()) {
+      newErrors.expiry = "La date d'expiration est requise";
+    } else if (!/^\d{2}\/\d{2}$/.test(cardDetails.expiry)) {
+      newErrors.expiry = "Format invalide (MM/AA requis)";
+    }
+    
+    if (!cardDetails.cvv.trim()) {
+      newErrors.cvv = 'Le code de sécurité est requis';
+    } else if (cardDetails.cvv.length !== 3) {
+      newErrors.cvv = 'Le code CVV doit contenir 3 chiffres';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePayment = async (e) => {
+    e?.preventDefault();
+    
+    if (!validateCardDetails()) {
+      showError(AlertMessages.PAYMENT_INFO_REQUIRED);
       return;
     }
 
@@ -37,19 +70,43 @@ const PaymentPage = ({ onNavigate, orderData }) => {
         });
 
         if (result.success) {
+          showSuccess(AlertMessages.PAYMENT_SUCCESS);
           setIsSuccess(true);
           setTimeout(() => {
             onNavigate('confirmation', result.orderId);
           }, 2000);
         } else {
-          alert(result.error);
+          showError(result.error || AlertMessages.PAYMENT_ERROR);
           setIsProcessing(false);
         }
       } catch (error) {
-        alert('Erreur lors du traitement de la commande');
+        showError(AlertMessages.PAYMENT_ERROR);
         setIsProcessing(false);
       }
     }, 3000);
+  };
+
+  const handleInputChange = (field, value) => {
+    setCardDetails(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const formatCardNumber = (value) => {
+    return value.replace(/\W/gi, '').replace(/(.{4})/g, '$1 ').trim();
+  };
+
+  const formatExpiry = (value) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length >= 3) {
+      return cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4);
+    }
+    return cleaned;
+  };
+
+  const formatCVV = (value) => {
+    return value.replace(/\D/g, '').slice(0, 3);
   };
 
   if (isSuccess) {
@@ -120,7 +177,7 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                 </div>
               </div>
 
-              <form onSubmit={handlePayment} className="payment-form">
+              <div className="payment-form">
                 {/* Carte visuelle améliorée */}
                 <div className="payment-card-visual">
                   <div className="card-header">
@@ -160,15 +217,18 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                         type="text"
                         placeholder="1234 5678 9012 3456"
                         value={cardDetails.number}
-                        onChange={(e) => setCardDetails(prev => ({
-                          ...prev,
-                          number: e.target.value.replace(/\W/gi, '').replace(/(.{4})/g, '$1 ').trim()
-                        }))}
-                        className="form-input-enhanced card-number-input"
+                        onChange={(e) => handleInputChange('number', formatCardNumber(e.target.value))}
+                        className={`form-input-enhanced card-number-input ${errors.number ? 'error' : ''}`}
                         maxLength="19"
                         required
                       />
                     </div>
+                    {errors.number && (
+                      <p className="field-error">
+                        <span className="field-error-icon">⚠</span>
+                        {errors.number}
+                      </p>
+                    )}
                   </div>
 
                   <div className="form-group-enhanced">
@@ -179,13 +239,16 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                       type="text"
                       placeholder="JEAN DUPONT"
                       value={cardDetails.name}
-                      onChange={(e) => setCardDetails(prev => ({
-                        ...prev,
-                        name: e.target.value.toUpperCase()
-                      }))}
-                      className="form-input-enhanced card-name-input"
+                      onChange={(e) => handleInputChange('name', e.target.value.toUpperCase())}
+                      className={`form-input-enhanced card-name-input ${errors.name ? 'error' : ''}`}
                       required
                     />
+                    {errors.name && (
+                      <p className="field-error">
+                        <span className="field-error-icon">⚠</span>
+                        {errors.name}
+                      </p>
+                    )}
                   </div>
 
                   <div className="form-group-enhanced">
@@ -196,14 +259,17 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                       type="text"
                       placeholder="MM/AA"
                       value={cardDetails.expiry}
-                      onChange={(e) => setCardDetails(prev => ({
-                        ...prev,
-                        expiry: e.target.value
-                      }))}
-                      className="form-input-enhanced"
+                      onChange={(e) => handleInputChange('expiry', formatExpiry(e.target.value))}
+                      className={`form-input-enhanced ${errors.expiry ? 'error' : ''}`}
                       maxLength="5"
                       required
                     />
+                    {errors.expiry && (
+                      <p className="field-error">
+                        <span className="field-error-icon">⚠</span>
+                        {errors.expiry}
+                      </p>
+                    )}
                   </div>
 
                   <div className="form-group-enhanced">
@@ -216,15 +282,18 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                         type="text"
                         placeholder="123"
                         value={cardDetails.cvv}
-                        onChange={(e) => setCardDetails(prev => ({
-                          ...prev,
-                          cvv: e.target.value.replace(/\D/g, '')
-                        }))}
-                        className="form-input-enhanced card-cvv-input"
+                        onChange={(e) => handleInputChange('cvv', formatCVV(e.target.value))}
+                        className={`form-input-enhanced card-cvv-input ${errors.cvv ? 'error' : ''}`}
                         maxLength="3"
                         required
                       />
                     </div>
+                    {errors.cvv && (
+                      <p className="field-error">
+                        <span className="field-error-icon">⚠</span>
+                        {errors.cvv}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -244,25 +313,7 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                     </div>
                   </div>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={isProcessing}
-                  className="btn-primary-xl payment-submit-btn"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="loader-spinner"></div>
-                      Traitement en cours...
-                    </>
-                  ) : (
-                    <>
-                      Payer {orderData?.orderSummary?.total.toFixed(2)}€
-                      <Lock size={20} />
-                    </>
-                  )}
-                </button>
-              </form>
+              </div>
             </div>
           </div>
 
@@ -325,6 +376,25 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                     <span>{orderData?.orderSummary?.total.toFixed(2)}€</span>
                   </div>
                 </div>
+
+                {/* Moved the payment button here */}
+                <button
+                  onClick={handlePayment}
+                  disabled={isProcessing}
+                  className="btn-primary-xl payment-submit-btn"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="loader-spinner"></div>
+                      Traitement en cours...
+                    </>
+                  ) : (
+                    <>
+                      Payer {orderData?.orderSummary?.total.toFixed(2)}€
+                      <Lock size={20} />
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

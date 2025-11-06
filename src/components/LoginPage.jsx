@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useAlert } from '../contexts/AlertContext';
+import { AlertMessages, getFieldError } from '../utils/alertMessages';
 
 const LoginPage = ({ onNavigate }) => {
   const [isSignup, setIsSignup] = useState(false);
@@ -12,9 +14,9 @@ const LoginPage = ({ onNavigate }) => {
     address: ''
   });
   const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, signup } = useAuth();
+  const { success, error: showError } = useAlert();
 
   const validate = () => {
     const newErrors = {};
@@ -30,13 +32,13 @@ const LoginPage = ({ onNavigate }) => {
         newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
       }
       if (!formData.firstName) {
-        newErrors.firstName = 'Le prénom est requis';
+        newErrors.firstName = getFieldError('firstName');
       }
       if (!formData.lastName) {
-        newErrors.lastName = 'Le nom est requis';
+        newErrors.lastName = getFieldError('lastName');
       }
       if (!formData.address) {
-        newErrors.address = 'L\'adresse est requise';
+        newErrors.address = getFieldError('address');
       }
     }
     
@@ -46,26 +48,35 @@ const LoginPage = ({ onNavigate }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError('');
+    setErrors({});
     
-    if (!validate()) return;
+    if (!validate()) {
+      showError(AlertMessages.FORM_VALIDATION_ERROR);
+      return;
+    }
 
     setLoading(true);
 
-    if (isSignup) {
-      const result = await signup(formData);
-      if (result.success) {
-        onNavigate('home');
+    try {
+      if (isSignup) {
+        const result = await signup(formData);
+        if (result.success) {
+          success(AlertMessages.SIGNUP_SUCCESS);
+          onNavigate('home');
+        } else {
+          showError(result.error || AlertMessages.SIGNUP_ERROR);
+        }
       } else {
-        setApiError(result.error);
+        const result = await login(formData.email, formData.password);
+        if (result.success) {
+          success(AlertMessages.LOGIN_SUCCESS);
+          onNavigate('home');
+        } else {
+          showError(result.error || AlertMessages.LOGIN_ERROR);
+        }
       }
-    } else {
-      const result = await login(formData.email, formData.password);
-      if (result.success) {
-        onNavigate('home');
-      } else {
-        setApiError(result.error);
-      }
+    } catch (err) {
+      showError(AlertMessages.NETWORK_ERROR);
     }
 
     setLoading(false);
@@ -73,7 +84,6 @@ const LoginPage = ({ onNavigate }) => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Effacer l'erreur du champ quand l'utilisateur tape
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -86,83 +96,107 @@ const LoginPage = ({ onNavigate }) => {
           {isSignup ? 'Créer un compte' : 'Connexion'}
         </h2>
 
-        {apiError && (
-          <div className="error-message api-error">
-            {apiError}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="login-form">
           {isSignup && (
             <div className="form-row">
               <div className="form-group">
-                <label>Prénom</label>
+                <label>Prénom *</label>
                 <input
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className="form-input"
+                  className={`form-input ${errors.firstName ? 'error' : ''}`}
                 />
-                {errors.firstName && <p className="error-message">{errors.firstName}</p>}
+                {errors.firstName && (
+                  <p className="field-error">
+                    <span className="field-error-icon">⚠</span>
+                    {errors.firstName}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
-                <label>Nom</label>
+                <label>Nom *</label>
                 <input
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className="form-input"
+                  className={`form-input ${errors.lastName ? 'error' : ''}`}
                 />
-                {errors.lastName && <p className="error-message">{errors.lastName}</p>}
+                {errors.lastName && (
+                  <p className="field-error">
+                    <span className="field-error-icon">⚠</span>
+                    {errors.lastName}
+                  </p>
+                )}
               </div>
             </div>
           )}
 
           <div className="form-group">
-            <label>Email</label>
+            <label>Email *</label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className="form-input"
+              className={`form-input ${errors.email ? 'error' : ''}`}
             />
-            {errors.email && <p className="error-message">{errors.email}</p>}
+            {errors.email && (
+              <p className="field-error">
+                <span className="field-error-icon">⚠</span>
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div className="form-group">
-            <label>Mot de passe</label>
+            <label>Mot de passe *</label>
             <input
               type="password"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              className="form-input"
+              className={`form-input ${errors.password ? 'error' : ''}`}
             />
-            {errors.password && <p className="error-message">{errors.password}</p>}
+            {errors.password && (
+              <p className="field-error">
+                <span className="field-error-icon">⚠</span>
+                {errors.password}
+              </p>
+            )}
           </div>
 
           {isSignup && (
             <>
               <div className="form-group">
-                <label>Confirmer le mot de passe</label>
+                <label>Confirmer le mot de passe *</label>
                 <input
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className="form-input"
+                  className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
                 />
-                {errors.confirmPassword && <p className="error-message">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                  <p className="field-error">
+                    <span className="field-error-icon">⚠</span>
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
-                <label>Adresse</label>
+                <label>Adresse *</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="form-input"
+                  className={`form-input ${errors.address ? 'error' : ''}`}
                   rows="3"
                 />
-                {errors.address && <p className="error-message">{errors.address}</p>}
+                {errors.address && (
+                  <p className="field-error">
+                    <span className="field-error-icon">⚠</span>
+                    {errors.address}
+                  </p>
+                )}
               </div>
             </>
           )}
@@ -181,7 +215,6 @@ const LoginPage = ({ onNavigate }) => {
             onClick={() => {
               setIsSignup(!isSignup);
               setErrors({});
-              setApiError('');
             }}
             className="switch-btn"
           >
