@@ -291,7 +291,7 @@ body {
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   border: 1px solid #f3f4f6;
-  padding: 32px;
+  padding: 22px;
   transition: all 0.3s ease;
 }
 
@@ -1057,29 +1057,11 @@ body {
   align-self: flex-start;
 }
 
-.summary-card {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f3f4f6;
-  padding: 32px;
-  transition: all 0.3s ease;
-}
-
-.summary-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
 .summary-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 32px;
-}
-
-.summary-items {
-  margin-bottom: 32px;
+  margin-bottom: 12px;
 }
 
 .summary-items h3 {
@@ -2772,7 +2754,7 @@ body {
 .stat-card {
   display: flex;
   flex-direction: row;
-  max-width: 300px;
+  max-width: 330px;
   max-height: 60px;
   background-color: white;
   align-items: center;
@@ -3176,20 +3158,6 @@ body {
   position: sticky;
   top: 100px;
   align-self: flex-start;
-}
-
-.summary-card {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f3f4f6;
-  padding: 32px;
-  transition: all 0.3s ease;
-}
-
-.summary-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .summary-content {

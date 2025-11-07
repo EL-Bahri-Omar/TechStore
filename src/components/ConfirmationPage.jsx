@@ -61,12 +61,10 @@ const ConfirmationPage = ({ onNavigate, orderId }) => {
 
         {/* Carte principale */}
         <div className="confirmation-card">
-          {/* En-tête de la carte */}
           <div className="card-header">
             <h2>Suivi de votre commande</h2>
           </div>
           
-          {/* Étapes de livraison */}
           <div className="tracking-section">
             <div className="tracking-steps">
               {steps.map((step, index) => {
@@ -76,12 +74,10 @@ const ConfirmationPage = ({ onNavigate, orderId }) => {
                 
                 return (
                   <div key={step.label} className="tracking-step">
-                    {/* Cercle d'étape */}
                     <div className={`step-circle ${step.color} ${(isCompleted || isCurrent) ? 'step-pulse' : ''}`}>
                       <Icon size={32} />
                     </div>
                     
-                    {/* Texte de l'étape */}
                     <div className="step-info">
                       <div className={`step-label ${(isCompleted || isCurrent) ? 'step-label-active' : 'step-label-inactive'}`}>
                         {step.label}
@@ -91,7 +87,6 @@ const ConfirmationPage = ({ onNavigate, orderId }) => {
                       </div>
                     </div>
                     
-                    {/* Ligne de connexion */}
                     {index < steps.length - 1 && (
                       <div className={`step-connector ${isCompleted ? 'connector-active' : 'connector-inactive'}`}></div>
                     )}

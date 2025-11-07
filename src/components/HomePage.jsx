@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Range } from 'react-range';
 import ProductCard from '../components/ProductCard';
+import { getFeaturedProducts } from '../services/firebaseService';
 
 const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCategoryChange }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -10,11 +11,29 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
   const [sortBy, setSortBy] = useState('popularity');
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
 
   const productsPerPage = 12;
-  const featuredProducts = products.slice(0, 3);
 
-  // Check if any filter is active
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        setLoadingFeatured(true);
+        const featured = await getFeaturedProducts(3);
+        setFeaturedProducts(featured);
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+        // Fallback to first 3 products if featured fetch fails
+        setFeaturedProducts(products.slice(0, 3));
+      } finally {
+        setLoadingFeatured(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, [products]);
+
   const isFilterActive = selectedCategory !== 'all' || 
                          priceRange[0] > 0 || 
                          priceRange[1] < 2000 || 
@@ -22,14 +41,13 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                          searchQuery;
 
   useEffect(() => {
-    // Only run carousel timer if no filters are active
-    if (!isFilterActive) {
+    if (!isFilterActive && featuredProducts.length > 0 && !loadingFeatured) {
       const timer = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % featuredProducts.length);
       }, 5000);
       return () => clearInterval(timer);
     }
-  }, [featuredProducts.length, isFilterActive]);
+  }, [featuredProducts.length, isFilterActive, loadingFeatured]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % featuredProducts.length);
@@ -46,7 +64,6 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
     }
   };
 
-  // Filter and sort logic
   useEffect(() => {
     let result = [...products];
 
@@ -107,13 +124,12 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
     onCategoryChange('all');
     setPriceRange([0, 2000]);
     setSortBy('popularity');
-    setCurrentSlide(0); // Reset carousel to first slide
+    setCurrentSlide(0);
   };
 
   return (
     <div className="home-page">
-      {/* Carousel - Only show when no filters are active */}
-      {!isFilterActive && (
+      {!isFilterActive && featuredProducts.length > 0 && !loadingFeatured && (
         <div className="carousel-container">
           <div className="carousel">
             {featuredProducts.map((product, index) => (
@@ -164,6 +180,15 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                 />
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show loading for carousel */}
+      {!isFilterActive && loadingFeatured && (
+        <div className="carousel-container">
+          <div className="carousel-loading">
+            Chargement des produits en vedette...
           </div>
         </div>
       )}
@@ -316,7 +341,6 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                     Précédent
                   </button>
                   
-                  {/* Always show first page */}
                   <button
                     onClick={() => setCurrentPage(1)}
                     className={`pagination-btn ${currentPage === 1 ? 'active' : ''}`}
@@ -324,16 +348,13 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                     1
                   </button>
 
-                  {/* Show ellipsis if current page is beyond page 3 */}
                   {currentPage > 3 && (
                     <span className="pagination-ellipsis">...</span>
                   )}
 
-                  {/* Show pages around current page */}
                   {[...Array(totalPages)]
                     .map((_, i) => i + 1)
                     .filter(page => {
-                      // Show current page and 2 pages before/after, but not first/last page
                       if (page === 1 || page === totalPages) return false;
                       return Math.abs(page - currentPage) <= 1;
                     })
@@ -348,12 +369,10 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                     ))
                   }
 
-                  {/* Show ellipsis if there are pages between current range and last page */}
                   {currentPage < totalPages - 2 && (
                     <span className="pagination-ellipsis">...</span>
                   )}
 
-                  {/* Always show last page if there's more than 1 page */}
                   {totalPages > 1 && (
                     <button
                       onClick={() => setCurrentPage(totalPages)}

@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { 
+  createUserProfile, 
+  findUserByEmail, 
+  updateUserProfile,
+  addToWishlist,
+  removeFromWishlist,
+  getUserProfile
+} from '../services/firebaseService';
 
 const AuthContext = createContext();
 
@@ -14,25 +22,43 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserData = useCallback(async (userId) => {
+    try {
+      const userData = await getUserProfile(userId);
+      if (userData) {
+        const { password: _, ...userWithoutPassword } = userData; // Prefix with _ to indicate unused
+        setUser(userWithoutPassword);
+        sessionStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté au chargement
     const savedUser = sessionStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      
+      if (userData.id) {
+        fetchUserData(userData.id);
+      } else {
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
-  }, []);
+  }, [fetchUserData]);
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:3001/users');
-      const users = await response.json();
+      const foundUser = await findUserByEmail(email);
       
-      const foundUser = users.find(u => u.email === email && u.password === password);
-      
-      if (foundUser) {
-        const userData = { ...foundUser };
-        delete userData.password; // Ne pas stocker le mot de passe dans le state
+      if (foundUser && foundUser.password === password) {
+        const { password: _, ...userData } = foundUser; // Prefix with _ to indicate unused
         setUser(userData);
         sessionStorage.setItem('user', JSON.stringify(userData));
         return { success: true };
@@ -46,18 +72,22 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData) => {
     try {
-      // Vérifier si l'email existe déjà
-      const response = await fetch('http://localhost:3001/users');
-      const users = await response.json();
+      let existingUser = null;
+      try {
+        existingUser = await findUserByEmail(userData.email);
+      } catch (error) {
+        console.log('Permission check failed, proceeding with signup...');
+      }
       
-      const emailExists = users.some(u => u.email === userData.email);
-      if (emailExists) {
+      if (existingUser) {
         return { success: false, error: 'Cet email est déjà utilisé' };
       }
 
-      // Créer un nouvel utilisateur
+      const userId = Date.now().toString();
+      await createUserProfile(userId, userData);
+
       const newUser = {
-        id: Date.now().toString(),
+        id: userId,
         ...userData,
         createdAt: new Date().toISOString(),
         orders: [],
@@ -65,24 +95,13 @@ export const AuthProvider = ({ children }) => {
         addresses: [userData.address]
       };
 
-      const signupResponse = await fetch('http://localhost:3001/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
-
-      if (signupResponse.ok) {
-        const { password, ...userWithoutPassword } = newUser;
-        setUser(userWithoutPassword);
-        sessionStorage.setItem('user', JSON.stringify(userWithoutPassword));
-        return { success: true };
-      } else {
-        return { success: false, error: 'Erreur lors de l\'inscription' };
-      }
+      const { password: _, ...userWithoutPassword } = newUser; // Prefix with _ to indicate unused
+      setUser(userWithoutPassword);
+      sessionStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      return { success: true };
     } catch (error) {
-      return { success: false, error: 'Erreur de connexion' };
+      console.error('Signup error:', error);
+      return { success: false, error: 'Erreur lors de l\'inscription' };
     }
   };
 
@@ -93,66 +112,51 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (updatedData) => {
     try {
-      const response = await fetch(`http://localhost:3001/users/${user.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (response.ok) {
-        const updatedUser = { ...user, ...updatedData };
-        setUser(updatedUser);
-        sessionStorage.setItem('user', JSON.stringify(updatedUser));
-        return { success: true };
-      }
-      return { success: false, error: 'Erreur lors de la mise à jour' };
+      await updateUserProfile(user.id, updatedData);
+      const updatedUser = { ...user, ...updatedData };
+      setUser(updatedUser);
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      return { success: true };
     } catch (error) {
       return { success: false, error: 'Erreur de connexion' };
     }
   };
 
-const addToFavorites = async (productId) => {
+  const refreshUserData = useCallback(async () => {
+    if (user?.id) {
+      await fetchUserData(user.id);
+    }
+  }, [user, fetchUserData]);
+
+  const addToFavorites = async (productId) => {
     if (!user) return { success: false, error: 'Utilisateur non connecté' };
 
     try {
-      // Récupérer l'utilisateur actuel
-      const response = await fetch(`http://localhost:3001/users/${user.id}`);
-      const currentUser = await response.json();
-
-      // Vérifier si le produit est déjà en favori
-      const isAlreadyFavorite = currentUser.favorites?.includes(productId);
+      const isAlreadyFavorite = user.favorites?.includes(productId);
       
-      let updatedFavorites;
       if (isAlreadyFavorite) {
-        // Retirer des favoris
-        updatedFavorites = currentUser.favorites.filter(id => id !== productId);
-      } else {
-        // Ajouter aux favoris
-        updatedFavorites = [...(currentUser.favorites || []), productId];
-      }
-
-      // Mettre à jour l'utilisateur
-      const updateResponse = await fetch(`http://localhost:3001/users/${user.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ favorites: updatedFavorites }),
-      });
-
-      if (updateResponse.ok) {
+        await removeFromWishlist(user.id, productId);
+        const updatedFavorites = user.favorites.filter(id => id !== productId);
         const updatedUser = { ...user, favorites: updatedFavorites };
         setUser(updatedUser);
         sessionStorage.setItem('user', JSON.stringify(updatedUser));
         return { 
           success: true, 
-          isFavorite: !isAlreadyFavorite,
-          message: isAlreadyFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris'
+          isFavorite: false,
+          message: 'Retiré des favoris'
+        };
+      } else {
+        await addToWishlist(user.id, productId);
+        const updatedFavorites = [...(user.favorites || []), productId];
+        const updatedUser = { ...user, favorites: updatedFavorites };
+        setUser(updatedUser);
+        sessionStorage.setItem('user', JSON.stringify(updatedUser));
+        return { 
+          success: true, 
+          isFavorite: true,
+          message: 'Ajouté aux favoris'
         };
       }
-      return { success: false, error: 'Erreur lors de la mise à jour' };
     } catch (error) {
       return { success: false, error: 'Erreur de connexion' };
     }
@@ -170,6 +174,7 @@ const addToFavorites = async (productId) => {
     updateProfile,
     addToFavorites,
     isProductInFavorites,
+    refreshUserData,
     loading
   };
 

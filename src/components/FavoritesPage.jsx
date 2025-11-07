@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import ProductCard from './ProductCard';
+import { getUserWishlist } from '../services/firebaseService';
 
 const FavoritesPage = ({ onNavigate }) => {
   const { user } = useAuth();
@@ -9,18 +10,15 @@ const FavoritesPage = ({ onNavigate }) => {
 
   useEffect(() => {
     const fetchFavoriteProducts = async () => {
-      if (!user?.favorites?.length) {
+      if (!user) {
         setFavoriteProducts([]);
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch('/db.json');
-        const data = await response.json();
-        const favorites = data.products.filter(product => 
-          user.favorites.includes(product.id)
-        );
+        setLoading(true);
+        const favorites = await getUserWishlist(user.id);
         setFavoriteProducts(favorites);
       } catch (error) {
         console.error('Error fetching favorite products:', error);
@@ -68,7 +66,6 @@ const FavoritesPage = ({ onNavigate }) => {
               </p>
             </div>
             
-            {/* Grille avec 3 produits par ligne */}
             <div className="favorites-grid">
               {favoriteProducts.map((product) => (
                 <ProductCard

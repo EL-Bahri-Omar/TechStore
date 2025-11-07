@@ -127,7 +127,6 @@ const PaymentPage = ({ onNavigate, orderData }) => {
   return (
     <div className="payment-page">
       <div className="payment-container">
-        {/* Header avec étapes */}
         <div className="payment-header">
           <button
             onClick={() => onNavigate('checkout')}
@@ -178,7 +177,7 @@ const PaymentPage = ({ onNavigate, orderData }) => {
               </div>
 
               <div className="payment-form">
-                {/* Carte visuelle améliorée */}
+                {/* Carte visuelle */}
                 <div className="payment-card-visual">
                   <div className="card-header">
                     <div className="card-logos">
@@ -377,7 +376,6 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                   </div>
                 </div>
 
-                {/* Moved the payment button here */}
                 <button
                   onClick={handlePayment}
                   disabled={isProcessing}

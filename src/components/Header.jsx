@@ -37,16 +37,13 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
 
   const userInitials = user ? `${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}` : '';
 
-  // Pages where CategoriesNav should be shown
   const showCategoriesNav = ['home', 'product'].includes(currentPage);
 
   return (
     <header className="header">
-      {/* Main Header */}
       <div className="container">
         <div className="header-content">
           
-          {/* Logo cliquable */}
           <div 
             onClick={handleLogoClick}
             className="header-logo-container"
@@ -58,7 +55,6 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
             />
           </div>
           
-          {/* Search Bar in Header */}
           <div className="header-search">
             <div className="search-container">
               <Search className="search-icon" size={20} />
@@ -198,7 +194,6 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
         )}
       </div>
 
-      {/* Categories Navbar - shown only on specific pages */}
       {showCategoriesNav && (
         <CategoriesNav 
           selectedCategory={selectedCategory}

@@ -82,7 +82,6 @@ const OrdersPage = ({ onNavigate }) => {
   return (
     <div className="orders-page">
       <div className="orders-container">
-        {/* En-tête */}
         <div className="orders-header">
           <div>
             <h1>Mes commandes</h1>
@@ -126,7 +125,6 @@ const OrdersPage = ({ onNavigate }) => {
               .sort((a, b) => new Date(b.date) - new Date(a.date))
               .map((order) => (
                 <div key={order.id} className="order-card">
-                  {/* En-tête de la commande */}
                   <div className={`order-header ${getStatusGradient(order.status)}`}>
                     <div className="order-header-content">
                       <div className="order-info">
