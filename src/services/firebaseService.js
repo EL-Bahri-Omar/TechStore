@@ -290,6 +290,7 @@ export const getUserOrders = async (userId) => {
 
 export const createUserProfile = async (userId, userData) => {
   try {
+    const { password, confirmPassword, ...userDataWithoutPassword } = userData;
     await setDoc(doc(db, 'users', userId), {
       ...userData,
       id: userId,

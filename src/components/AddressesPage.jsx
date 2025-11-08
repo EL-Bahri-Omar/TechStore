@@ -25,6 +25,7 @@ const AddressesPage = ({ onNavigate }) => {
         <div className="addresses-grid">
           {user.addresses.map((address, index) => (
             <div key={index} className="address-card">
+              <h3 className="address-title">Adresse {index + 1}</h3>
               <p className="address-text">{address}</p>
             </div>
           ))}
@@ -32,6 +33,9 @@ const AddressesPage = ({ onNavigate }) => {
       ) : (
         <div className="empty-state">
           <p className="empty-state-text">Vous n'avez pas encore d'adresse enregistrée.</p>
+          <p className="empty-state-subtext">
+            Vos adresses apparaîtront ici après avoir passé une commande.
+          </p>
         </div>
       )}
     </div>

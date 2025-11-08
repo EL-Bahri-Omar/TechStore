@@ -10,7 +10,8 @@ const ProfilePage = ({ onNavigate }) => {
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     email: user?.email || '',
-    phone: user?.phone || ''
+    phone: user?.phone || '',
+    address: user?.address || '' // Add address field
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,7 @@ const ProfilePage = ({ onNavigate }) => {
 
     setLoading(true);
     
+    // Only update the main address attribute, not the addresses array
     const result = await updateProfile(formData);
     if (result.success) {
       success(AlertMessages.PROFILE_UPDATE_SUCCESS);
@@ -142,6 +144,20 @@ const ProfilePage = ({ onNavigate }) => {
               onChange={(e) => handleInputChange('phone', e.target.value)}
               className="form-input"
             />
+          </div>
+
+          <div className="form-group">
+            <label>Adresse principale</label>
+            <textarea
+              value={formData.address}
+              onChange={(e) => handleInputChange('address', e.target.value)}
+              className="form-input"
+              rows="3"
+              placeholder="Votre adresse principale (facultatif)"
+            />
+            <p className="form-help-text">
+              Cette adresse sera utilisée comme adresse par défaut pour vos commandes.
+            </p>
           </div>
 
           <button

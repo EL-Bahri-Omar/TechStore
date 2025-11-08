@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAlert } from '../contexts/AlertContext';
 import { AlertMessages, getFieldError } from '../utils/alertMessages';
@@ -11,10 +12,12 @@ const LoginPage = ({ onNavigate }) => {
     email: '',
     password: '',
     confirmPassword: '',
-    address: ''
+    phone: ''
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login, signup } = useAuth();
   const { success, error: showError } = useAlert();
 
@@ -36,9 +39,6 @@ const LoginPage = ({ onNavigate }) => {
       }
       if (!formData.lastName) {
         newErrors.lastName = getFieldError('lastName');
-      }
-      if (!formData.address) {
-        newErrors.address = getFieldError('address');
       }
     }
     
@@ -87,6 +87,33 @@ const LoginPage = ({ onNavigate }) => {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      phone: ''
+    });
+    setErrors({});
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const handleToggleMode = () => {
+    setIsSignup(!isSignup);
+    resetForm();
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   return (
@@ -151,12 +178,23 @@ const LoginPage = ({ onNavigate }) => {
 
           <div className="form-group">
             <label>Mot de passe *</label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              className={`form-input ${errors.password ? 'error' : ''}`}
-            />
+            <div className="password-input-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                className={`form-input password-input ${errors.password ? 'error' : ''}`}
+                placeholder={isSignup ? 'Au moins 6 caractères' : ''}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={togglePasswordVisibility}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="field-error">
                 <span className="field-error-icon">⚠</span>
@@ -169,12 +207,22 @@ const LoginPage = ({ onNavigate }) => {
             <>
               <div className="form-group">
                 <label>Confirmer le mot de passe *</label>
-                <input
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
-                />
+                <div className="password-input-container">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    className={`form-input password-input ${errors.confirmPassword ? 'error' : ''}`}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={toggleConfirmPasswordVisibility}
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {errors.confirmPassword && (
                   <p className="field-error">
                     <span className="field-error-icon">⚠</span>
@@ -184,19 +232,13 @@ const LoginPage = ({ onNavigate }) => {
               </div>
 
               <div className="form-group">
-                <label>Adresse *</label>
-                <textarea
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className={`form-input ${errors.address ? 'error' : ''}`}
-                  rows="3"
+                <label>Téléphone</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  className="form-input"
                 />
-                {errors.address && (
-                  <p className="field-error">
-                    <span className="field-error-icon">⚠</span>
-                    {errors.address}
-                  </p>
-                )}
               </div>
             </>
           )}
@@ -212,10 +254,7 @@ const LoginPage = ({ onNavigate }) => {
 
         <div className="auth-switch">
           <button
-            onClick={() => {
-              setIsSignup(!isSignup);
-              setErrors({});
-            }}
+            onClick={handleToggleMode}
             className="switch-btn"
           >
             {isSignup ? 'Déjà un compte ? Se connecter' : 'Pas de compte ? S\'inscrire'}

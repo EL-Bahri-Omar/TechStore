@@ -14,7 +14,7 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
-  const { user, refreshUserData } = useAuth();
+  const { user, addAddress } = useAuth();
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -71,68 +71,43 @@ export const CartProvider = ({ children }) => {
 
   const createOrder = async (orderData) => {
     try {
-      // Clean the cart items before sending to Firebase
-      const cleanCartItems = cart.map(item => ({
-        id: String(item.id),
-        name: String(item.name),
-        price: Number(item.price),
-        quantity: Number(item.quantity),
-        image: String(item.image || ''),
-        ...(item.category && { category: String(item.category) })
-      }));
-
       const order = {
-        id: generateOrderId(),
-        date: new Date().toISOString(),
-        items: cleanCartItems,
-        status: 'confirmed',
-        shippingAddress: {
-          firstName: String(orderData.shippingAddress?.firstName || ''),
-          lastName: String(orderData.shippingAddress?.lastName || ''),
-          address: String(orderData.shippingAddress?.address || ''),
-          city: String(orderData.shippingAddress?.city || ''),
-          postalCode: String(orderData.shippingAddress?.postalCode || ''),
-          country: String(orderData.shippingAddress?.country || ''),
-          ...(orderData.shippingAddress?.phone && { phone: String(orderData.shippingAddress.phone) })
-        },
-        shippingMethod: {
-          id: String(orderData.shippingMethod?.id || 'standard'),
-          name: String(orderData.shippingMethod?.name || 'Standard Delivery'),
-          price: Number(orderData.shippingMethod?.price || 0),
-          duration: String(orderData.shippingMethod?.duration || '')
-        },
-        paymentMethod: String(orderData.paymentMethod || 'card'),
-        orderSummary: {
-          subtotal: Number(orderData.orderSummary?.subtotal || 0),
-          shipping: Number(orderData.orderSummary?.shipping || 0),
-          tax: Number(orderData.orderSummary?.tax || 0),
-          total: Number(orderData.orderSummary?.total || 0)
-        }
+        items: [...cart],
+        total: getCartTotal(),
+        shippingAddress: orderData.shippingAddress,
+        billingAddress: orderData.billingAddress,
+        paymentMethod: orderData.paymentMethod,
+        shippingMethod: orderData.shippingMethod
       };
 
-      // Use the renamed Firebase service function
-      const createdOrderId = await createOrderFirebase(user?.id, order);
-      
-      if (createdOrderId) {
-        clearCart();
-        
-        // Refresh user data to get the updated orders
-        if (user) {
-          await refreshUserData();
+      // Save shipping address to user's addresses if user is logged in
+      if (user && orderData.shippingAddress) {
+        console.log('Saving address for user:', user.id);
+        const result = await addAddress(orderData.shippingAddress);
+        if (result.success) {
+          console.log('Address saved successfully');
+        } else {
+          console.log('Address not saved (duplicate):', result.error);
         }
-        
-        return { success: true, orderId: createdOrderId, isGuest: !user };
       }
+
+      // Use Firebase service to create order
+      const orderId = await createOrderFirebase(user?.id, order);
       
-      return { success: false, error: 'Erreur lors de la sauvegarde de la commande' };
+      if (orderId) {
+        clearCart();
+        return { 
+          success: true, 
+          orderId: orderId,
+          isGuest: !user 
+        };
+      } else {
+        return { success: false, error: 'Erreur lors de la création de la commande' };
+      }
     } catch (error) {
       console.error('Error creating order:', error);
       return { success: false, error: 'Erreur de connexion' };
     }
-  };
-
-  const generateOrderId = () => {
-    return 'CMD-' + Date.now().toString().slice(-8);
   };
 
   const value = {

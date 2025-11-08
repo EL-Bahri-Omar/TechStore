@@ -5,7 +5,8 @@ import {
   updateUserProfile,
   addToWishlist,
   removeFromWishlist,
-  getUserProfile
+  getUserProfile,
+  addUserAddress
 } from '../services/firebaseService';
 
 const AuthContext = createContext();
@@ -18,6 +19,17 @@ export const useAuth = () => {
   return context;
 };
 
+// Simple hash function
+const hashPassword = (password) => {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return hash.toString();
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +38,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await getUserProfile(userId);
       if (userData) {
-        const { password: _, ...userWithoutPassword } = userData; // Prefix with _ to indicate unused
+        // Remove password from user data before storing in state/session
+        const { password, ...userWithoutPassword } = userData;
         setUser(userWithoutPassword);
         sessionStorage.setItem('user', JSON.stringify(userWithoutPassword));
       }
@@ -57,8 +70,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const foundUser = await findUserByEmail(email);
       
-      if (foundUser && foundUser.password === password) {
-        const { password: _, ...userData } = foundUser; // Prefix with _ to indicate unused
+      if (foundUser && foundUser.password === hashPassword(password)) {
+        // Remove password from user data before storing in state/session
+        const { password, ...userData } = foundUser;
         setUser(userData);
         sessionStorage.setItem('user', JSON.stringify(userData));
         return { success: true };
@@ -76,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       try {
         existingUser = await findUserByEmail(userData.email);
       } catch (error) {
-        console.log('Permission check failed, proceeding with signup...');
+        console.log('Email check failed, proceeding with signup...');
       }
       
       if (existingUser) {
@@ -84,20 +98,37 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userId = Date.now().toString();
-      await createUserProfile(userId, userData);
-
-      const newUser = {
-        id: userId,
-        ...userData,
+      
+      // Create user data with hashed password for Firestore
+      const userDataForFirestore = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        phone: userData.phone || '',
+        password: hashPassword(userData.password), // Store hashed password
         createdAt: new Date().toISOString(),
         orders: [],
         favorites: [],
-        addresses: [userData.address]
+        addresses: [] // Start with empty addresses array
+      };
+      
+      await createUserProfile(userId, userDataForFirestore);
+
+      // Create user data without password for session storage
+      const userDataForSession = {
+        id: userId,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        phone: userData.phone || '',
+        createdAt: new Date().toISOString(),
+        orders: [],
+        favorites: [],
+        addresses: [] // Start with empty addresses array
       };
 
-      const { password: _, ...userWithoutPassword } = newUser; // Prefix with _ to indicate unused
-      setUser(userWithoutPassword);
-      sessionStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      setUser(userDataForSession);
+      sessionStorage.setItem('user', JSON.stringify(userDataForSession));
       return { success: true };
     } catch (error) {
       console.error('Signup error:', error);
@@ -119,6 +150,34 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       return { success: false, error: 'Erreur de connexion' };
+    }
+  };
+
+  const addAddress = async (addressObject) => {
+    if (!user) return { success: false, error: 'Utilisateur non connecté' };
+
+    try {
+      // Format the address as a string
+      const formattedAddress = `${addressObject.address}, ${addressObject.city} ${addressObject.postalCode}, ${addressObject.country}`;
+      
+      // Check if address already exists (case insensitive and trimmed)
+      const addressExists = user.addresses?.some(addr => 
+        addr.toLowerCase().trim() === formattedAddress.toLowerCase().trim()
+      );
+
+      if (!addressExists) {
+        await addUserAddress(user.id, formattedAddress);
+        const updatedAddresses = [...(user.addresses || []), formattedAddress];
+        const updatedUser = { ...user, addresses: updatedAddresses };
+        setUser(updatedUser);
+        sessionStorage.setItem('user', JSON.stringify(updatedUser));
+        return { success: true, message: 'Adresse ajoutée avec succès' };
+      } else {
+        return { success: false, error: 'Cette adresse existe déjà' };
+      }
+    } catch (error) {
+      console.error('Error adding address:', error);
+      return { success: false, error: 'Erreur lors de l\'ajout de l\'adresse' };
     }
   };
 
@@ -172,6 +231,7 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     updateProfile,
+    addAddress,
     addToFavorites,
     isProductInFavorites,
     refreshUserData,
