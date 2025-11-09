@@ -18,7 +18,6 @@ import ConfirmationPage from './components/ConfirmationPage';
 import { getProducts } from './services/firebaseService';
 import './App.css';
 
-// Main App Component with Routing
 const ECommerceApp = () => {
   return (
     <Router>
