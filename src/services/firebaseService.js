@@ -62,7 +62,7 @@ export const getProductsByCategory = async (category) => {
   }
 };
 
-export const getFeaturedProducts = async (count = 3) => {
+export const getFeaturedProducts = async (count = 7) => {
   try {
     const q = query(
       collection(db, 'products'),
@@ -126,10 +126,8 @@ export const getUserWishlist = async (userId) => {
       const userData = userDoc.data();
       const favoriteIds = userData.favorites || [];
       
-      // Get ALL products first for better matching
       const allProducts = await getProducts();
       
-      // Filter products that match favorite IDs (handle both string and number comparisons)
       const wishlistProducts = allProducts.filter(product => {
         return favoriteIds.some(favId => 
           String(favId) === String(product.id) || 
@@ -366,7 +364,6 @@ export const getCategories = async () => {
   }
 };
 
-// ===== AUTH OPERATIONS =====
 export const findUserByEmail = async (email) => {
   try {
     const q = query(collection(db, 'users'), where('email', '==', email));

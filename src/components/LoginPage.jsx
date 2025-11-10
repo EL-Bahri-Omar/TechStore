@@ -230,16 +230,6 @@ const LoginPage = ({ onNavigate }) => {
                   </p>
                 )}
               </div>
-
-              <div className="form-group">
-                <label>Téléphone</label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="form-input"
-                />
-              </div>
             </>
           )}
 

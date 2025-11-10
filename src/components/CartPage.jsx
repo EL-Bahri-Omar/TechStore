@@ -75,7 +75,7 @@ const CartPage = ({ onNavigate }) => {
                   />
                   <div className="cart-item-details">
                     <h3>{item.name}</h3>
-                    <p className="cart-item-price">{item.price}€</p>
+                    <p className="cart-item-price">{item.price} €</p>
                     <div className="cart-item-controls">
                       <div className="quantity-control">
                         <button
@@ -103,7 +103,7 @@ const CartPage = ({ onNavigate }) => {
                     </div>
                   </div>
                   <div className="cart-item-total">
-                    <p>{(item.price * item.quantity).toFixed(2)}€</p>
+                    <p>{(item.price * item.quantity).toFixed(2)} €</p>
                   </div>
                 </div>
               </div>
@@ -127,19 +127,19 @@ const CartPage = ({ onNavigate }) => {
               <div className="summary-details">
                 <div className="summary-row">
                   <span>Sous-total ({getCartItemsCount()} articles)</span>
-                  <span>{subtotal.toFixed(2)}€</span>
+                  <span>{subtotal.toFixed(2)} €</span>
                 </div>
                 <div className="summary-row">
                   <span>Livraison</span>
-                  <span>{shipping.toFixed(2)}€</span>
+                  <span>{shipping.toFixed(2)} €</span>
                 </div>
                 <div className="summary-row">
                   <span>TVA (20%)</span>
-                  <span>{tax.toFixed(2)}€</span>
+                  <span>{tax.toFixed(2)} €</span>
                 </div>
                 <div className="summary-total">
                   <span>Total</span>
-                  <span>{total.toFixed(2)}€</span>
+                  <span>{total.toFixed(2)} €</span>
                 </div>
               </div>
 

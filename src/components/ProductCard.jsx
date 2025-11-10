@@ -78,11 +78,11 @@ const ProductCard = ({ product, onViewDetails }) => {
               </span>
             ))}
           </div>
-          <span className="rating-text">({product.reviewCount})</span>
+          <span className="rating-text">({product.reviews.length} avis)</span>
         </div>
 
         <div className="product-details">
-          <span className="product-price">{product.price}€</span>
+          <span className="product-price">{product.price} €</span>
           <span className={`product-stock ${product.stock === 0 ? 'out-of-stock' : ''}`}>
             {product.stock > 0 ? `${product.stock} en stock` : 'Rupture'}
           </span>

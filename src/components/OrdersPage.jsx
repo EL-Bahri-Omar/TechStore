@@ -181,7 +181,7 @@ const OrdersPage = ({ onNavigate }) => {
                             <div className="detail-item-content">
                               <p className="detail-item-title">{order.shippingMethod.name}</p>
                               <p className="detail-item-description">{order.shippingMethod.duration}</p>
-                              <p className="detail-item-price">{order.shippingMethod.price}€</p>
+                              <p className="detail-item-price">{order.shippingMethod.price} €</p>
                             </div>
                           </div>
                           
@@ -220,10 +220,10 @@ const OrdersPage = ({ onNavigate }) => {
                             <div className="order-item-info">
                               <h5>{item.name}</h5>
                               <p>Quantité: {item.quantity}</p>
-                              <p>{item.price}€ l'unité</p>
+                              <p>{item.price} € l'unité</p>
                             </div>
                             <div className="order-item-total">
-                              <p>{(item.price * item.quantity).toFixed(2)}€</p>
+                              <p>{(item.price * item.quantity).toFixed(2)} €</p>
                               <p>Total</p>
                             </div>
                           </div>
@@ -235,11 +235,11 @@ const OrdersPage = ({ onNavigate }) => {
                     <div className="order-footer">
                       <div className="order-summary">
                         <div className="order-summary-info">
-                          {order.items.length} article(s) • Livraison: {order.shippingMethod.price}€
+                          {order.items.length} article(s) • Livraison: {order.shippingMethod.price} €
                         </div>
                         <div className="order-total">
-                          <p>{order.orderSummary.total.toFixed(2)}€</p>
-                          <p>Dont {order.orderSummary.tax.toFixed(2)}€ de TVA</p>
+                          <p>{order.orderSummary.total.toFixed(2)} €</p>
+                          <p>Dont {order.orderSummary.tax.toFixed(2)} € de TVA</p>
                         </div>
                       </div>
                     </div>

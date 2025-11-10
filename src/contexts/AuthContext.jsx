@@ -19,13 +19,12 @@ export const useAuth = () => {
   return context;
 };
 
-// Simple hash function
 const hashPassword = (password) => {
   let hash = 0;
   for (let i = 0; i < password.length; i++) {
     const char = password.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = hash & hash;
   }
   return hash.toString();
 };
@@ -99,22 +98,20 @@ export const AuthProvider = ({ children }) => {
 
       const userId = Date.now().toString();
       
-      // Create user data with hashed password for Firestore
       const userDataForFirestore = {
         firstName: userData.firstName,
         lastName: userData.lastName,
         email: userData.email,
         phone: userData.phone || '',
-        password: hashPassword(userData.password), // Store hashed password
+        password: hashPassword(userData.password),
         createdAt: new Date().toISOString(),
         orders: [],
         favorites: [],
-        addresses: [] // Start with empty addresses array
+        addresses: [] 
       };
       
       await createUserProfile(userId, userDataForFirestore);
 
-      // Create user data without password for session storage
       const userDataForSession = {
         id: userId,
         firstName: userData.firstName,
@@ -124,7 +121,7 @@ export const AuthProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
         orders: [],
         favorites: [],
-        addresses: [] // Start with empty addresses array
+        addresses: [] 
       };
 
       setUser(userDataForSession);

@@ -11,7 +11,7 @@ const ProfilePage = ({ onNavigate }) => {
     lastName: user?.lastName || '',
     email: user?.email || '',
     phone: user?.phone || '',
-    address: user?.address || '' // Add address field
+    address: user?.address || ''
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,6 @@ const ProfilePage = ({ onNavigate }) => {
 
     setLoading(true);
     
-    // Only update the main address attribute, not the addresses array
     const result = await updateProfile(formData);
     if (result.success) {
       success(AlertMessages.PROFILE_UPDATE_SUCCESS);

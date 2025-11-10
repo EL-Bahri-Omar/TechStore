@@ -299,13 +299,6 @@ const CheckoutPage = ({ onNavigate }) => {
                         onChange={(e) => setShippingMethod(e.target.value)}
                         className="hidden"
                       />
-                      <div className={`radio-indicator ${
-                        shippingMethod === method.id ? 'radio-checked' : 'radio-unchecked'
-                      }`}>
-                        {shippingMethod === method.id && (
-                          <div className="radio-dot"></div>
-                        )}
-                      </div>
                       <div className={`method-icon ${method.color}`}>
                         <Icon size={24} />
                       </div>
@@ -314,7 +307,7 @@ const CheckoutPage = ({ onNavigate }) => {
                         <div className="method-duration">{method.duration}</div>
                       </div>
                       <div className="method-price">
-                        <div className="price-amount">{method.price}€</div>
+                        <div className="price-amount">{method.price} €</div>
                         <div className="price-label">TTC</div>
                       </div>
                     </label>
@@ -353,13 +346,6 @@ const CheckoutPage = ({ onNavigate }) => {
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className="hidden"
                       />
-                      <div className={`payment-radio-indicator ${
-                        paymentMethod === method.id ? 'payment-radio-checked' : 'payment-radio-unchecked'
-                      }`}>
-                        {paymentMethod === method.id && (
-                          <div className="payment-radio-dot"></div>
-                        )}
-                      </div>
                       <div className={`payment-method-icon ${method.color}`}>
                         <Icon size={32} />
                       </div>
@@ -396,7 +382,7 @@ const CheckoutPage = ({ onNavigate }) => {
                       <p>Qté: {item.quantity}</p>
                     </div>
                     <div className="item-total">
-                      {(item.price * item.quantity).toFixed(2)}€
+                      {(item.price * item.quantity).toFixed(2)} €
                     </div>
                   </div>
                 ))}
@@ -411,17 +397,16 @@ const CheckoutPage = ({ onNavigate }) => {
                 ].map((item, index) => (
                   <div key={index} className="total-row">
                     <span>{item.label}</span>
-                    <span>{item.value}€</span>
+                    <span>{item.value} €</span>
                   </div>
                 ))}
                 
                 <div className="grand-total">
                   <span>Total</span>
-                  <span>{total.toFixed(2)}€</span>
+                  <span>{total.toFixed(2)} €</span>
                 </div>
               </div>
 
-              {/* Moved the payment button here */}
               <button 
                 onClick={handleSubmit}
                 className="btn-primary-xl"

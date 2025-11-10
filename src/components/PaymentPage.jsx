@@ -186,7 +186,7 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                     </div>
                     <div className="card-balance">
                       <div>Solde disponible</div>
-                      <div>{orderData?.orderSummary?.total.toFixed(2)}€</div>
+                      <div>{orderData?.orderSummary?.total.toFixed(2)} €</div>
                     </div>
                   </div>
                   <div className="card-number">
@@ -352,7 +352,7 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                           <span>{item.name}</span>
                           <span>x{item.quantity}</span>
                         </div>
-                        <span>{(item.price * item.quantity).toFixed(2)}€</span>
+                        <span>{(item.price * item.quantity).toFixed(2)} €</span>
                       </div>
                     ))}
                   </div>
@@ -366,13 +366,13 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                   ].map((item, index) => (
                     <div key={index} className="total-row">
                       <span>{item.label}</span>
-                      <span>{item.value}€</span>
+                      <span>{item.value} €</span>
                     </div>
                   ))}
                   
                   <div className="grand-total">
                     <span>Total</span>
-                    <span>{orderData?.orderSummary?.total.toFixed(2)}€</span>
+                    <span>{orderData?.orderSummary?.total.toFixed(2)} €</span>
                   </div>
                 </div>
 
@@ -388,7 +388,7 @@ const PaymentPage = ({ onNavigate, orderData }) => {
                     </>
                   ) : (
                     <>
-                      Payer {orderData?.orderSummary?.total.toFixed(2)}€
+                      Payer {orderData?.orderSummary?.total.toFixed(2)} €
                       <Lock size={20} />
                     </>
                   )}

@@ -20,12 +20,12 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
     const fetchFeaturedProducts = async () => {
       try {
         setLoadingFeatured(true);
-        const featured = await getFeaturedProducts(3);
+        const featured = await getFeaturedProducts(7);
         setFeaturedProducts(featured);
       } catch (error) {
         console.error('Error fetching featured products:', error);
-        // Fallback to first 3 products if featured fetch fails
-        setFeaturedProducts(products.slice(0, 3));
+        // Fallback to first 7 products if featured fetch fails
+        setFeaturedProducts(products.slice(0, 7));
       } finally {
         setLoadingFeatured(false);
       }
@@ -141,7 +141,7 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                   <img src={product.image} alt={product.name} className="carousel-image" />
                   <div className="carousel-text">
                     <h2>{product.name}</h2>
-                    <p>{product.price} €</p>
+                    <p>{product.price}  €</p>
                     <button className="carousel-view-btn">Voir le produit</button>
                   </div>
                 </div>
@@ -285,8 +285,8 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                         }}
                       />
                       <div className="price-values">
-                        <span>{priceRange[0]} €</span>
-                        <span>{priceRange[1]} €</span>
+                        <span>{priceRange[0]}  €</span>
+                        <span>{priceRange[1]}  €</span>
                       </div>
                     </div>
                   </div>

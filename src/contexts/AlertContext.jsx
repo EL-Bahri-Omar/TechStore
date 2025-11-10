@@ -74,7 +74,6 @@ export const AlertProvider = ({ children }) => {
     });
   }, [showAlert]);
 
-  // Move AlertComponent outside to prevent recreation on every render
   const AlertComponent = () => {
     if (alerts.length === 0) return null;
 

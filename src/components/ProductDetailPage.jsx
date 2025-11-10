@@ -128,7 +128,7 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
               </div>
 
               <div className="price-large">
-                {product.price}€
+                {product.price} €
               </div>
 
               <div className="stock-status">

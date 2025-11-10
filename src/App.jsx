@@ -60,7 +60,7 @@ const AppContent = () => {
     
     switch (page) {
       case 'home':
-        path = 'home';
+        path = '/';
         break;
       case 'product':
         path = `/product/${data}`;
@@ -99,7 +99,7 @@ const AppContent = () => {
         navigate(-1);
         return;
       default:
-        path = 'home';
+        path = '/';
     }
     
     navigate(path);
@@ -108,7 +108,7 @@ const AppContent = () => {
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    if (location.pathname !== 'home') {
+    if (location.pathname !== '/') {
       handleNavigate('home');
     }
   };
@@ -116,7 +116,7 @@ const AppContent = () => {
   // Get current page from URL
   const getCurrentPage = () => {
     const path = location.pathname;
-    if (path === 'home') return 'home';
+    if (path === '/') return 'home';
     if (path.startsWith('/product/')) return 'product';
     if (path === '/cart') return 'cart';
     if (path === '/login') return 'login';

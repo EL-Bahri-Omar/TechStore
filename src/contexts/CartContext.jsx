@@ -80,7 +80,6 @@ export const CartProvider = ({ children }) => {
         shippingMethod: orderData.shippingMethod
       };
 
-      // Save shipping address to user's addresses if user is logged in
       if (user && orderData.shippingAddress) {
         console.log('Saving address for user:', user.id);
         const result = await addAddress(orderData.shippingAddress);
@@ -91,7 +90,6 @@ export const CartProvider = ({ children }) => {
         }
       }
 
-      // Use Firebase service to create order
       const orderId = await createOrderFirebase(user?.id, order);
       
       if (orderId) {

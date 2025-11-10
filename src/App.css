@@ -604,7 +604,7 @@ body {
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background-color: #f3f4f6;
+  background-color: #9bb6ff;
 }
 
 .pagination-btn.active {
@@ -1031,14 +1031,12 @@ body {
   justify-content: center;
   color: white;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to right, #91c1fc, #76abff);
 }
 
-.payment-method-card {
-  background: linear-gradient(to right, #3b82f6, #2563eb);
-}
 
 .payment-method-paypal {
-  background: linear-gradient(to right, #60a5fa, #3b82f6);
+  background: linear-gradient(to right, #4498ff, #1871ff);
 }
 
 .payment-method-applepay {
@@ -1931,8 +1929,10 @@ body {
   width: 85%;
   height: 350px;
   overflow: hidden;
-  background: linear-gradient(to right, #2563eb, #9333ea);
+  background: white;
   border-radius: 16px;
+  border-style: groove;
+  border-color: #6186ea;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
@@ -1962,11 +1962,9 @@ body {
 }
 
 .carousel-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
+  width: 50%;
   height: 100%;
-  object-fit: cover;
+  object-fit: scale-down;
   opacity: 0.8;
   border-radius: 16px;
 }
@@ -1976,24 +1974,26 @@ body {
   z-index: 10;
   text-align: center;
   color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .carousel-text h2 {
   font-size: 36px;
   font-weight: bold;
   margin-bottom: 16px;
+  color: black;
 }
 
 .carousel-text p {
   font-size: 24px;
   margin-bottom: 24px;
+  color: black;
 }
 
 .carousel-view-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid white;
-  color: white;
+  background: rgba(156, 144, 144, 0.2);
+  border: 2px solid rgb(0, 0, 0);
+  color: black;
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 16px;
@@ -2005,7 +2005,7 @@ body {
 
 .carousel-view-btn:hover {
   background: white;
-  color: #2563eb;
+  color: #333436;
   transform: translateY(-2px);
 }
 
@@ -2013,7 +2013,7 @@ body {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(91, 80, 80, 0.2);
   border: none;
   border-radius: 50%;
   width: 50px;
@@ -2029,7 +2029,7 @@ body {
 }
 
 .carousel-arrow:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(71, 71, 71, 0.3);
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -2056,18 +2056,18 @@ body {
   height: 12px;
   border-radius: 50%;
   border: none;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgb(77, 76, 76);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .carousel-indicator.active {
-  background-color: white;
+  background-color: rgb(203, 195, 195);
   transform: scale(1.2);
 }
 
 .carousel-indicator:hover {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(23, 33, 120, 0.8);
 }
 
 
@@ -3461,7 +3461,7 @@ body {
 .product-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: scale-down;
   transition: transform 0.3s ease;
 }
 
@@ -3618,11 +3618,12 @@ body {
   margin-bottom: 16px;
   border-radius: 12px;
   overflow: hidden;
+  max-height: 600px;
 }
 
 .product-images .main-image img {
   width: 100%;
-  height: 384px;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -3647,7 +3648,6 @@ body {
 }
 
 .thumbnail img {
-  width: 100%;
   height: 100%;
   object-fit: cover;
 }
@@ -4186,7 +4186,6 @@ body {
 
 /* ===== RESPONSIVE STYLES ===== */
 
-/* Mobile First - Base mobile styles (0px - 767px) */
 @media (max-width: 767px) {
   .container {
     padding-left: 1rem;
@@ -4349,7 +4348,7 @@ body {
 
   .cart-summary {
     position: static;
-    order: -1;
+    order: 1;
   }
 
   .cart-item {
@@ -4366,6 +4365,7 @@ body {
     width: 100%;
     height: 140px;
     margin-bottom: 12px;
+    object-fit: contain;
   }
 
   .cart-item-details h3 {
@@ -4838,10 +4838,16 @@ body {
 
   .product-images .main-image img {
     height: 150px;
+    width: 100%;
+    object-fit: scale-down;
+  }
+
+  .thumbnail{
+    max-height: 70px;
   }
 
   .image-thumbnails {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 6px;
   }
 
@@ -4853,7 +4859,7 @@ body {
 
   .product-header h1 {
     margin-right: 0;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 
   .price-large {
@@ -5237,7 +5243,6 @@ body {
   }
 }
 
-/* Small Laptop Styles (1024px - 1279px) */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .container {
     max-width: 1024px;
@@ -5253,6 +5258,10 @@ body {
   /* Categories Navbar */
   .categories-navbar-container {
     gap: 1.25rem;
+  }
+
+  .category-nav-btn{
+    flex-direction: column;
   }
 
   /* Homepage */
@@ -5324,13 +5333,11 @@ body {
   }
 }
 
-/* Large Laptop Styles (1280px - 1439px) */
 @media (min-width: 1280px) and (max-width: 1439px) {
   .container {
     max-width: 1280px;
   }
 
-  /* All components should work well at this size */
   .carousel {
     width: 86%;
     height: 350px;
@@ -5361,7 +5368,7 @@ body {
     gap: 32px;
   }
 
-  /* Product Pages - Use tablet layout */
+  /* Product Pages */
   .product-detail-grid {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
@@ -5388,13 +5395,12 @@ body {
   }
 }
 
-/* Desktop Styles (1440px and above) */
 @media (min-width: 1440px) {
   .container {
     max-width: 1440px;
   }
 
-  /* Product Pages - Use tablet layout */
+  /* Product Pages */
   .product-detail-grid {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
@@ -5451,6 +5457,15 @@ body {
 
   .carousel-text p {
     font-size: 14px;
+  }
+
+  .carousel-indicators{
+    bottom: 4px;
+  }
+
+  .carousel-indicator{
+    width: 8px;
+    height: 8px;
   }
 
   .cart-item {
