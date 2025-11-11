@@ -264,34 +264,34 @@ const ProductCard = ({ product, onViewDetails }) => {
 
 # 🖥️ Vue Desktop
 
-Page d'Accueil
+```Page d'Accueil``` 
 <img src="screenshots/home.png" width="300" alt="Page d'accueil">
 
-Détails Produit
+```Détails Produit```
 <img src="screenshots/productDetails.png" width="300" alt="Détails produit">
 
-Page Panier
+```Page Panier```
 <img src="screenshots/cart.png" width="300" alt="Page panier">
 
-Checkout
+```Checkout```
 <img src="screenshots/checkout.png" width="300" alt="Processus checkout">
 
-Paiement
+```Paiement```
 <img src="screenshots/payment.png" width="300" alt="Page paiement">
 
-Confirmation
+```Confirmation```
 <img src="screenshots/confirmation.png" width="300" alt="Confirmation commande">
 
-Profil Utilisateur
+```Profil Utilisateur```
 <img src="screenshots/profile.png" width="300" alt="Profil utilisateur">
 
-Commandes
+```Commandes```
 <img src="screenshots/orders.png" width="300" alt="Historique commandes">
 
-Favoris
+```Favoris```
 <img src="screenshots/favorites.png" width="300" alt="Liste favoris">
 
-Gestion Adresses
+```Gestion Adresses```
 <img src="screenshots/addresses.png" width="300" alt="Gestion adresses">
 
 Convention de Code
