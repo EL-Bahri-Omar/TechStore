@@ -17,14 +17,14 @@ export const CartProvider = ({ children }) => {
   const { user, addAddress } = useAuth();
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
+    const savedCart = sessionStorage.getItem('cart');
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    sessionStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (product, quantity = 1) => {
@@ -124,4 +124,5 @@ export const CartProvider = ({ children }) => {
       {children}
     </CartContext.Provider>
   );
+
 };
