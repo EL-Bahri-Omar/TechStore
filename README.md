@@ -3,8 +3,7 @@ Une application e-commerce moderne et performante développée avec React, spéc
 
 # 🚀 Fonctionnalités Principales
 
-# 🛍️ Expérience Utilisateur
-
+🛍️ Expérience Utilisateur
 Catalogue Produits - Navigation intuitive avec filtres par catégorie et prix
 
 Recherche Avancée - Recherche en temps réel avec suggestions
@@ -77,121 +76,154 @@ Compte Firebase
 
 Cloner le repository
 
+```
 bash
 git clone https://github.com/EL-Bahri-Omar/techstore.git
 cd techstore
+```
+
 Installer les dépendances
 
+```
 bash
 npm install
+```
+
 Configuration Firebase
 
+```
+bash
 # Créer le fichier .env.local
-
 cp .env.example .env.local
 
 # Configurer avec vos credentials Firebase
-
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+```
 
-# Lancer en développement
+Lancer en développement
 
+```
+bash
 npm run dev
+```
+
 L'application sera accessible sur http://localhost:5173
 
-# 📋 Scripts Disponibles:
+# 📋 Scripts Disponibles
 
-npm run dev # Mode développement
-npm run build # Build de production
-npm run preview # Preview du build
-npm run lint # Vérification du code
+```
+bash
+npm run dev          # Mode développement
+npm run build        # Build de production
+npm run preview      # Preview du build
+npm run lint         # Vérification du code
+```
 
 # 🏗️ Architecture du Projet
 
+```
+text
 techstore/
-├── public/ # Assets statiques
+├── public/                # Assets statiques
+├── screenshots/
 ├── src/
-│ ├── components/ # Composants réutilisables
-│ │ ├── ui/ # Composants d'interface
-│ │ ├── product/ # Composants produits
-│ │ └── layout/ # Composants de mise en page
-│ ├── contexts/ # Contexts React
-│ │ ├── AuthContext.jsx
-│ │ ├── CartContext.jsx
-│ │ ├── AlertContext.jsx
-│ │ └── index.js
-│ ├── pages/ # Pages de l'application
-│ │ ├── HomePage.jsx
-│ │ ├── ProductDetailPage.jsx
-│ │ ├── CartPage.jsx
-│ │ └── ...
-│ ├── services/ # Services et API
-│ │ ├── firebaseService.js
-│ │ └── api.js
-│ ├── utils/ # Utilitaires
-│ │ ├── constants.js
-│ │ ├── helpers.js
-│ │ └── alertMessages.js
-│ ├── hooks/ # Custom hooks
-│ │ └── useLocalStorage.js
-│ ├── assets/ # Ressources
-│ │ └── images/
-│ ├── App.jsx
-│ ├── main.jsx
-│ └── index.css
+│   ├── components/        # Composants réutilisables
+│   │   ├── ui/           # Composants d'interface
+│   │   ├── product/      # Composants produits
+│   │   └── layout/       # Composants de mise en page
+│   ├── contexts/         # Contexts React
+│   │   ├── AuthContext.jsx
+│   │   ├── CartContext.jsx
+│   │   ├── AlertContext.jsx
+│   │   └── index.js
+│   ├── pages/            # Pages de l'application
+│   │   ├── HomePage.jsx
+│   │   ├── ProductDetailPage.jsx
+│   │   ├── CartPage.jsx
+│   │   └── ...
+│   ├── services/         # Services et API
+│   │   ├── firebaseService.js
+│   │   └── api.js
+│   ├── utils/            # Utilitaires
+│   │   ├── constants.js
+│   │   ├── helpers.js
+│   │   └── alertMessages.js
+│   ├── hooks/            # Custom hooks
+│   │   └── useLocalStorage.js
+│   ├── assets/           # Ressources
+│   │   └── images/
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
 ├── package.json
 ├── vite.config.js
 └── vercel.json
+```
 
 # 🔧 Configuration Firebase
 
-Structure des Données :
-
+Structure des Données
 Collection: products
+
+```
+javascript
 {
-id: string,
-name: string,
-price: number,
-category: string,
-description: string,
-features: string[],
-images: string[],
-rating: number,
-reviews: Array<{
-user: string,
-rating: number,
-comment: string,
-date: string
-}>,
-stock: number,
-createdAt: timestamp
+  id: string,
+  name: string,
+  price: number,
+  category: string,
+  description: string,
+  features: string[],
+  images: string[],
+  rating: number,
+  reviews: Array<{
+    user: string,
+    rating: number,
+    comment: string,
+    date: string
+  }>,
+  stock: number,
+  createdAt: timestamp
 }
+```
 
 Collection: users
+
+```
+javascript
 {
-uid: string,
-email: string,
-displayName: string,
-favorites: string[], // product IDs
-orders: string[], // order IDs
-createdAt: timestamp
+  uid: string,
+  email: string,
+  displayName: string,
+  favorites: string[], // product IDs
+  orders: string[], // order IDs
+  createdAt: timestamp
 }
+```
 
 # 🚀 Déploiement
 
 Vercel (Recommandé)
+
+```
 bash
 npm run build
 vercel --prod
+```
+
 Firebase Hosting
+
+```
 bash
 npm run build
 firebase deploy
+```
+
 Variables d'Environnement en Production
 Assurez-vous de configurer les variables d'environnement dans votre plateforme de déploiement.
 
@@ -208,22 +240,60 @@ Desktop : ≥ 1024px
 # 🎨 Guidelines de Développement
 
 Structure des Composants
+
+```
 jsx
 // Convention de nommage
 const ProductCard = ({ product, onViewDetails }) => {
-// State et hooks
-const [isFavorite, setIsFavorite] = useState(false);
+  // State et hooks
+  const [isFavorite, setIsFavorite] = useState(false);
 
-// Handlers
-const handleFavoriteToggle = () => { ... };
+  // Handlers
+  const handleFavoriteToggle = () => { ... };
 
-// Rendu
-return (
-<div className="product-card">
-{/_ JSX _/}
-</div>
-);
+  // Rendu
+  return (
+    <div className="product-card">
+      {/* JSX */}
+    </div>
+  );
 };
+```
+
+# 📸 Captures d'Écran
+
+# 🖥️ Vue Desktop
+
+Page d'Accueil
+<img src="screenshots/home.png" width="300" alt="Page d'accueil">
+
+Détails Produit
+<img src="screenshots/productDetails.png" width="300" alt="Détails produit">
+
+Page Panier
+<img src="screenshots/cart.png" width="300" alt="Page panier">
+
+Checkout
+<img src="screenshots/checkout.png" width="300" alt="Processus checkout">
+
+Paiement
+<img src="screenshots/payment.png" width="300" alt="Page paiement">
+
+Confirmation
+<img src="screenshots/confirmation.png" width="300" alt="Confirmation commande">
+
+Profil Utilisateur
+<img src="screenshots/profile.png" width="300" alt="Profil utilisateur">
+
+Commandes
+<img src="screenshots/orders.png" width="300" alt="Historique commandes">
+
+Favoris
+<img src="screenshots/favorites.png" width="300" alt="Liste favoris">
+
+Gestion Adresses
+<img src="screenshots/addresses.png" width="300" alt="Gestion adresses">
+
 Convention de Code
 Composants en PascalCase
 
@@ -264,6 +334,10 @@ Commit les changements (git commit -m 'Add AmazingFeature')
 Push sur la branche (git push origin feature/AmazingFeature)
 
 Ouvrir une Pull Request
+
+# 📄 Licence
+
+Ce projet est sous licence MIT - voir le fichier LICENSE pour plus de détails.
 
 # 👨‍💻 Auteur
 
