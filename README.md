@@ -2,6 +2,7 @@ TechStore - E-commerce Application
 Une application e-commerce moderne et performante développée avec React, spécialisée dans la vente de produits technologiques.
 
 # 🚀 Fonctionnalités Principales
+
 🛍️ Expérience Utilisateur
 Catalogue Produits - Navigation intuitive avec filtres par catégorie et prix
 
@@ -12,6 +13,7 @@ Détails Produits - Pages détaillées avec galerie d'images et avis clients
 Design Responsive - Interface adaptée mobile, tablette et desktop
 
 # 🛒 Gestion du Panier
+
 Ajout/Modification - Gestion facile des quantités et articles
 
 Calcul Automatique - Sous-total, TVA et frais de livraison
@@ -19,6 +21,7 @@ Calcul Automatique - Sous-total, TVA et frais de livraison
 Persistance - Panier sauvegardé entre les sessions
 
 # 👤 Compte Utilisateur
+
 Authentification Sécurisée - Connexion avec Firebase Auth
 
 Profil Utilisateur - Gestion des informations personnelles
@@ -28,6 +31,7 @@ Liste de Favoris - Sauvegarde des produits préférés
 Historique des Commandes - Suivi complet des achats
 
 # 💳 Processus d'Achat
+
 Checkout Intuitif - Processus de commande en plusieurs étapes
 
 Paiement Sécurisé - Intégration de méthodes de paiement
@@ -35,6 +39,7 @@ Paiement Sécurisé - Intégration de méthodes de paiement
 Confirmation - Reçu détaillé avec suivi de livraison
 
 # 🛠️ Technologies Utilisées
+
 Frontend
 React 18 - Framework principal
 
@@ -59,6 +64,7 @@ Design Responsive - Mobile-first approach
 Icônes Lucide React - Interface cohérente
 
 # 📦 Installation et Développement
+
 Prérequis
 Node.js 18+
 
@@ -67,7 +73,9 @@ npm ou yarn
 Compte Firebase
 
 # 🚀 Démarrage Rapide
+
 Cloner le repository
+
 ```
 bash
 git clone https://github.com/EL-Bahri-Omar/techstore.git
@@ -75,12 +83,14 @@ cd techstore
 ```
 
 Installer les dépendances
+
 ```
 bash
 npm install
 ```
 
 Configuration Firebase
+
 ```
 bash
 # Créer le fichier .env.local
@@ -96,6 +106,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 ```
 
 Lancer en développement
+
 ```
 bash
 npm run dev
@@ -114,10 +125,12 @@ npm run lint         # Vérification du code
 ```
 
 # 🏗️ Architecture du Projet
+
 ```
 text
 techstore/
-├── public/                 # Assets statiques
+├── public/                # Assets statiques
+├── screenshots/
 ├── src/
 │   ├── components/        # Composants réutilisables
 │   │   ├── ui/           # Composants d'interface
@@ -153,8 +166,10 @@ techstore/
 ```
 
 # 🔧 Configuration Firebase
+
 Structure des Données
 Collection: products
+
 ```
 javascript
 {
@@ -178,6 +193,7 @@ javascript
 ```
 
 Collection: users
+
 ```
 javascript
 {
@@ -191,7 +207,9 @@ javascript
 ```
 
 # 🚀 Déploiement
+
 Vercel (Recommandé)
+
 ```
 bash
 npm run build
@@ -199,15 +217,18 @@ vercel --prod
 ```
 
 Firebase Hosting
+
 ```
 bash
 npm run build
 firebase deploy
 ```
+
 Variables d'Environnement en Production
 Assurez-vous de configurer les variables d'environnement dans votre plateforme de déploiement.
 
 # 📱 Responsive Design
+
 L'application utilise une approche mobile-first avec des breakpoints optimisés :
 
 Mobile : < 768px
@@ -217,17 +238,19 @@ Tablette : 768px - 1023px
 Desktop : ≥ 1024px
 
 # 🎨 Guidelines de Développement
+
 Structure des Composants
+
 ```
 jsx
 // Convention de nommage
 const ProductCard = ({ product, onViewDetails }) => {
   // State et hooks
   const [isFavorite, setIsFavorite] = useState(false);
-  
+
   // Handlers
   const handleFavoriteToggle = () => { ... };
-  
+
   // Rendu
   return (
     <div className="product-card">
@@ -236,6 +259,41 @@ const ProductCard = ({ product, onViewDetails }) => {
   );
 };
 ```
+
+# 📸 Captures d'Écran
+
+# 🖥️ Vue Desktop
+
+Page d'Accueil
+<img src="screenshots/home.png" width="300" alt="Page d'accueil">
+
+Détails Produit
+<img src="screenshots/productDetails.png" width="300" alt="Détails produit">
+
+Page Panier
+<img src="screenshots/cart.png" width="300" alt="Page panier">
+
+Checkout
+<img src="screenshots/checkout.png" width="300" alt="Processus checkout">
+
+Paiement
+<img src="screenshots/payment.png" width="300" alt="Page paiement">
+
+Confirmation
+<img src="screenshots/confirmation.png" width="300" alt="Confirmation commande">
+
+Profil Utilisateur
+<img src="screenshots/profile.png" width="300" alt="Profil utilisateur">
+
+Commandes
+<img src="screenshots/orders.png" width="300" alt="Historique commandes">
+
+Favoris
+<img src="screenshots/favorites.png" width="300" alt="Liste favoris">
+
+Gestion Adresses
+<img src="screenshots/addresses.png" width="300" alt="Gestion adresses">
+
 Convention de Code
 Composants en PascalCase
 
@@ -246,6 +304,7 @@ Hooks personnalisés préfixés par "use"
 CSS en BEM methodology
 
 # 🔒 Sécurité
+
 Validation des données côté client et serveur
 
 Règles de sécurité Firebase configurées
@@ -255,6 +314,7 @@ Protection des routes authentifiées
 Sanitization des entrées utilisateur
 
 # 📊 Performance
+
 Code Splitting automatique avec Vite
 
 Lazy Loading des images
@@ -264,6 +324,7 @@ Optimisation des bundles
 Caching stratégique
 
 # 🤝 Contribution
+
 Fork le projet
 
 Créer une branche feature (git checkout -b feature/AmazingFeature)
@@ -275,14 +336,16 @@ Push sur la branche (git push origin feature/AmazingFeature)
 Ouvrir une Pull Request
 
 # 📄 Licence
+
 Ce projet est sous licence MIT - voir le fichier LICENSE pour plus de détails.
 
 # 👨‍💻 Auteur
+
 EL Bahri Omar
 GitHub: @EL-Bahri-Omar
 
-
 # 🔗 Liens Utiles
+
 Documentation Firebase : https://firebase.google.com/docs
 
 Documentation React : https://reactjs.org/docs
@@ -290,4 +353,3 @@ Documentation React : https://reactjs.org/docs
 Live Demo : https://technologiastore.vercel.app
 
 Issues : https://github.com/EL-Bahri-Omar/techstore/issues
-
