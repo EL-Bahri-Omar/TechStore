@@ -265,34 +265,34 @@ const ProductCard = ({ product, onViewDetails }) => {
 # 🖥️ Vue Desktop
 
 ```Page d'Accueil``` 
-<img src="screenshots/home.png" width="300" alt="Page d'accueil">
+![home](/screenshots/home.png)
 
 ```Détails Produit```
-<img src="screenshots/productDetails.png" width="300" alt="Détails produit">
+![productDetails](/screenshots/productDetails.png)
 
 ```Page Panier```
-<img src="screenshots/cart.png" width="300" alt="Page panier">
+![cart](/screenshots/cart.png)
 
 ```Checkout```
-<img src="screenshots/checkout.png" width="300" alt="Processus checkout">
+![checkout](/screenshots/checkout.png)
 
 ```Paiement```
-<img src="screenshots/payment.png" width="300" alt="Page paiement">
+![payment](/screenshots/payment.png)
 
 ```Confirmation```
-<img src="screenshots/confirmation.png" width="300" alt="Confirmation commande">
+![confirmation](/screenshots/confirmation.png)
 
 ```Profil Utilisateur```
-<img src="screenshots/profile.png" width="300" alt="Profil utilisateur">
+![profile](/screenshots/profile.png)
 
 ```Commandes```
-<img src="screenshots/orders.png" width="300" alt="Historique commandes">
+![orders](/screenshots/orders.png)
 
 ```Favoris```
-<img src="screenshots/favorites.png" width="300" alt="Liste favoris">
+![favorites](/screenshots/favorites.png)
 
 ```Gestion Adresses```
-<img src="screenshots/addresses.png" width="300" alt="Gestion adresses">
+![addresses](/screenshots/addresses.png)
 
 Convention de Code
 Composants en PascalCase
