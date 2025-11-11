@@ -5474,10 +5474,12 @@ body {
 
   .summary-card {
     padding: 16px;
+    max-width: 90%;
   }
 
   .checkout-section {
     padding: 16px;
+    max-width: 90%;
   }
 
   .confirmation-header h1 {
