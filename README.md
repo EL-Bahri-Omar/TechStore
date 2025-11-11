@@ -68,16 +68,20 @@ Compte Firebase
 
 # 🚀 Démarrage Rapide
 Cloner le repository
-
+```
 bash
 git clone https://github.com/EL-Bahri-Omar/techstore.git
 cd techstore
-Installer les dépendances
+```
 
+Installer les dépendances
+```
 bash
 npm install
-Configuration Firebase
+```
 
+Configuration Firebase
+```
 bash
 # Créer le fichier .env.local
 cp .env.example .env.local
@@ -89,20 +93,28 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
-Lancer en développement
+```
 
+Lancer en développement
+```
 bash
 npm run dev
+```
+
 L'application sera accessible sur http://localhost:5173
 
 # 📋 Scripts Disponibles
+
+```
 bash
 npm run dev          # Mode développement
 npm run build        # Build de production
 npm run preview      # Preview du build
 npm run lint         # Vérification du code
+```
 
 # 🏗️ Architecture du Projet
+```
 text
 techstore/
 ├── public/                 # Assets statiques
@@ -138,10 +150,12 @@ techstore/
 ├── package.json
 ├── vite.config.js
 └── vercel.json
+```
 
 # 🔧 Configuration Firebase
 Structure des Données
 Collection: products
+```
 javascript
 {
   id: string,
@@ -161,7 +175,10 @@ javascript
   stock: number,
   createdAt: timestamp
 }
+```
+
 Collection: users
+```
 javascript
 {
   uid: string,
@@ -171,16 +188,22 @@ javascript
   orders: string[], // order IDs
   createdAt: timestamp
 }
+```
 
 # 🚀 Déploiement
 Vercel (Recommandé)
+```
 bash
 npm run build
 vercel --prod
+```
+
 Firebase Hosting
+```
 bash
 npm run build
 firebase deploy
+```
 Variables d'Environnement en Production
 Assurez-vous de configurer les variables d'environnement dans votre plateforme de déploiement.
 
@@ -195,6 +218,7 @@ Desktop : ≥ 1024px
 
 # 🎨 Guidelines de Développement
 Structure des Composants
+```
 jsx
 // Convention de nommage
 const ProductCard = ({ product, onViewDetails }) => {
@@ -211,6 +235,7 @@ const ProductCard = ({ product, onViewDetails }) => {
     </div>
   );
 };
+```
 Convention de Code
 Composants en PascalCase
 
@@ -265,3 +290,4 @@ Documentation React : https://reactjs.org/docs
 Live Demo : https://technologiastore.vercel.app
 
 Issues : https://github.com/EL-Bahri-Omar/techstore/issues
+
