@@ -264,6 +264,7 @@ const ProductCard = ({ product, onViewDetails }) => {
 
 # 🖥️ Vue Desktop
 
+<<<<<<< HEAD
 Page d'Accueil
 <img src="screenshots/home.png" width="300" alt="Page d'accueil">
 
@@ -293,6 +294,37 @@ Favoris
 
 Gestion Adresses
 <img src="screenshots/addresses.png" width="300" alt="Gestion adresses">
+=======
+```Page d'Accueil``` 
+![home](/screenshots/home.png)
+
+```Détails Produit```
+![productDetails](/screenshots/productDetails.png)
+
+```Page Panier```
+![cart](/screenshots/cart.png)
+
+```Checkout```
+![checkout](/screenshots/checkout.png)
+
+```Paiement```
+![payment](/screenshots/payment.png)
+
+```Confirmation```
+![confirmation](/screenshots/confirmation.png)
+
+```Profil Utilisateur```
+![profile](/screenshots/profile.png)
+
+```Commandes```
+![orders](/screenshots/orders.png)
+
+```Favoris```
+![favorites](/screenshots/favorites.png)
+
+```Gestion Adresses```
+![addresses](/screenshots/addresses.png)
+>>>>>>> 2a3962601fc7d87d6a6b8e406fd00f433b44bd81
 
 Convention de Code
 Composants en PascalCase
