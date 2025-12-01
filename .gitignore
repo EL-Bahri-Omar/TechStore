@@ -24,3 +24,4 @@ frontend/dist-ssr
 *.sw?
 backend/node_modules
 backend/config/config.env
+backend/data/products.json
