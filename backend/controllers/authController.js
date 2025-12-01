@@ -3,7 +3,6 @@ const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middlewares/catchAsyncErrors');
 const { sendTokens, clearTokens, verifyRefreshToken } = require('../utils/jwtToken');
 
-
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     const { firstName, lastName, email, password, phone } = req.body;
 
@@ -25,7 +24,6 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     // Send tokens
     await sendTokens(user, 201, res);
 });
-
 
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
     const { email, password } = req.body;
@@ -49,7 +47,6 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
     // Send tokens
     await sendTokens(user, 200, res);
 });
-
 
 exports.refreshToken = catchAsyncErrors(async (req, res, next) => {
     const { refreshToken } = req.body;
@@ -86,7 +83,6 @@ exports.refreshToken = catchAsyncErrors(async (req, res, next) => {
     }
 });
 
-
 exports.logout = catchAsyncErrors(async (req, res, next) => {
     const { refreshToken } = req.body;
 
@@ -118,4 +114,67 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
         clearTokens(res);
         return next(new ErrorHandler('Logout completed', 200));
     }
+});
+
+exports.getUserProfile = catchAsyncErrors(async (req, res, next) => {
+    const user = await User.findById(req.user.id);
+
+    res.status(200).json({
+        success: true,
+        user: {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: user.phone,
+            address: user.address,
+            addresses: user.addresses,
+            favorites: user.favorites,
+            orders: user.orders,
+            lastLogin: user.lastLogin,
+            createdAt: user.createdAt
+        }
+    });
+});
+
+exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
+    const newUserData = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        phone: req.body.phone
+    };
+
+    // Update address if provided
+    if (req.body.address) {
+        newUserData.address = {
+            address: req.body.address.address || '',
+            city: req.body.address.city || '',
+            postalCode: req.body.address.postalCode || '',
+            country: req.body.address.country || ''
+        };
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false
+    });
+
+    res.status(200).json({
+        success: true,
+        user: {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: user.phone,
+            address: user.address,
+            addresses: user.addresses,
+            favorites: user.favorites,
+            orders: user.orders,
+            lastLogin: user.lastLogin,
+            createdAt: user.createdAt
+        }
+    });
 });
