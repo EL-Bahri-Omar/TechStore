@@ -103,7 +103,6 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-
 // Generate JWT access token
 userSchema.methods.getAccessToken = function () {
     return jwt.sign(
@@ -131,7 +130,7 @@ userSchema.methods.generateRefreshToken = function () {
     if (this.refreshTokens.length > 5) {
         this.refreshTokens = this.refreshTokens.slice(-5);
     }
-
+    
     return refreshToken;
 };
 
@@ -158,8 +157,4 @@ userSchema.methods.removeRefreshToken = function (token) {
     );
 };
 
-<<<<<<< HEAD
 module.exports = mongoose.model('User', userSchema);
-=======
-module.exports = mongoose.model('User', userSchema);
->>>>>>> 71e6b687b9105bd9c7ed73fd292920b662b72090
