@@ -158,4 +158,8 @@ userSchema.methods.removeRefreshToken = function (token) {
     );
 };
 
+<<<<<<< HEAD
 module.exports = mongoose.model('User', userSchema);
+=======
+module.exports = mongoose.model('User', userSchema);
+>>>>>>> 71e6b687b9105bd9c7ed73fd292920b662b72090
