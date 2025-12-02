@@ -3,8 +3,18 @@ const app = express();
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
+
+// Import security middleware
+const { apiLimiter, corsOptions } = require('./middlewares/security');
 
 dotenv.config({ path: 'config/config.env' });
+
+// CORS
+app.use(cors(corsOptions));
+
+// Rate limiting
+app.use('/api/v1', apiLimiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
