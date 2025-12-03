@@ -1,38 +1,50 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Range } from 'react-range';
-import ProductCard from '../components/ProductCard';
-import { getFeaturedProducts } from '../services/firebaseService';
+import ProductCard from '../product/ProductCard';
+import { getProducts } from '../../actions/productActions';
 
-const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCategoryChange }) => {
+const HomePage = ({ 
+  searchQuery, 
+  selectedCategory, 
+  onCategoryChange,
+  currentPage,
+  onPageChange,
+  priceRange,
+  onPriceRangeChange,
+  sortBy,
+  onSortChange,
+  onClearFilters
+}) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+ 
+  const { products, loading, resPerPage, filteredProductsCount } = useSelector(state => state.products);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [filteredProducts, setFilteredProducts] = useState(products);
-  const [priceRange, setPriceRange] = useState([0, 2000]);
-  const [sortBy, setSortBy] = useState('popularity');
   const [showFilters, setShowFilters] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-  const productsPerPage = 12;
-
+  // Load products when filters, search, or page changes
   useEffect(() => {
-    const fetchFeaturedProducts = async () => {
-      try {
-        setLoadingFeatured(true);
-        const featured = await getFeaturedProducts(7);
-        setFeaturedProducts(featured);
-      } catch (error) {
-        console.error('Error fetching featured products:', error);
-        // Fallback to first 7 products if featured fetch fails
-        setFeaturedProducts(products.slice(0, 7));
-      } finally {
-        setLoadingFeatured(false);
-      }
-    };
+    console.log('HomePage: Dispatching getProducts with:', {
+      searchQuery, selectedCategory, currentPage, priceRange, sortBy
+    });
+    dispatch(getProducts(searchQuery, selectedCategory, currentPage, priceRange, sortBy));
+  }, [dispatch, searchQuery, selectedCategory, currentPage, priceRange, sortBy]);
 
-    fetchFeaturedProducts();
-  }, [products]);
+  // Set featured products (first 7 products for carousel)
+  useEffect(() => {
+    if (products && products.length > 0 && currentPage === 1 && !searchQuery && selectedCategory === 'all') {
+      setFeaturedProducts(products.slice(0, 7));
+      setLoadingFeatured(false);
+    } else {
+      setFeaturedProducts([]);
+      setLoadingFeatured(false);
+    }
+  }, [products, currentPage, searchQuery, selectedCategory]);
 
   const isFilterActive = selectedCategory !== 'all' || 
                          priceRange[0] > 0 || 
@@ -40,14 +52,15 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                          sortBy !== 'popularity' || 
                          searchQuery;
 
+  // Carousel auto-slide - only when no filters active
   useEffect(() => {
-    if (!isFilterActive && featuredProducts.length > 0 && !loadingFeatured) {
+    if (!isFilterActive && featuredProducts.length > 0 && !loadingFeatured && currentPage === 1) {
       const timer = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % featuredProducts.length);
       }, 5000);
       return () => clearInterval(timer);
     }
-  }, [featuredProducts.length, isFilterActive, loadingFeatured]);
+  }, [featuredProducts.length, isFilterActive, loadingFeatured, currentPage]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % featuredProducts.length);
@@ -60,111 +73,149 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
   const handleCarouselClick = () => {
     const currentProduct = featuredProducts[currentSlide];
     if (currentProduct) {
-      onNavigate('product', currentProduct.id);
+      navigate(`/product/${currentProduct._id || currentProduct.id}`);
     }
   };
 
-  useEffect(() => {
-    let result = [...products];
-
-    if (selectedCategory !== 'all') {
-      result = result.filter((p) => p.category === selectedCategory);
-    }
-
-    result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
-
-    if (searchQuery) {
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (sortBy === 'price-asc') {
-      result.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-desc') {
-      result.sort((a, b) => b.price - a.price);
-    } else if (sortBy === 'rating') {
-      result.sort((a, b) => b.rating - a.rating);
-    }
-
-    setFilteredProducts(result);
-    setCurrentPage(1);
-  }, [selectedCategory, priceRange, sortBy, searchQuery, products]);
-
   const categories = [
     'all',
-    'informatique',
+    'Informatique',
     'Téléphonie & Tablette',
     'Stockage',
-    'impression',
+    'Impression',
     'Audio',
     'Accessoires',
-    'photo',
-    'Television'
+    'Photo',
+    'Télévision'
   ];
 
   const categoryNames = {
     all: 'Toutes les catégories',
-    informatique: 'Informatique',
+    Informatique: 'Informatique',
     'Téléphonie & Tablette': 'Téléphonie & Tablette',
     Stockage: 'Stockage',
-    impression: 'Impression',
+    Impression: 'Impression',
     Audio: 'Audio',
     Accessoires: 'Accessoires',
-    photo: 'Photo',
-    Television: 'Télévision'
+    Photo: 'Photo',
+    Télévision: 'Télévision'
   };
 
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  // pagination info
+  const totalPages = Math.ceil(filteredProductsCount / resPerPage) || 1;
 
   const clearFilters = () => {
-    onCategoryChange('all');
-    setPriceRange([0, 2000]);
-    setSortBy('popularity');
+    if (onClearFilters) {
+      onClearFilters();
+    } else {
+      onCategoryChange('all');
+      onPriceRangeChange([0, 2000]);
+      onSortChange('popularity');
+    }
     setCurrentSlide(0);
+  };
+
+  const handleViewDetails = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
+  // Handle filter changes 
+  const handleCategoryChange = (category) => {
+    onCategoryChange(category);
+  };
+
+  const handlePriceRangeChange = (range) => {
+    onPriceRangeChange(range);
+  };
+
+  const handleSortChange = (sort) => {
+    onSortChange(sort);
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total pages is less than max visible
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Always show first page
+      pageNumbers.push(1);
+      
+      // Calculate start and end of visible pages
+      let startPage = Math.max(2, currentPage - 1);
+      let endPage = Math.min(totalPages - 1, currentPage + 1);
+      
+      // Adjust if we're at the beginning
+      if (currentPage <= 2) {
+        endPage = 4;
+      }
+      
+      // Adjust if we're at the end
+      if (currentPage >= totalPages - 1) {
+        startPage = totalPages - 3;
+      }
+      
+      // Add ellipsis after first page if needed
+      if (startPage > 2) {
+        pageNumbers.push('...');
+      }
+      
+      // Add middle pages
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+      
+      // Add ellipsis before last page if needed
+      if (endPage < totalPages - 1) {
+        pageNumbers.push('...');
+      }
+      
+      // Always show last page
+      pageNumbers.push(totalPages);
+    }
+    
+    return pageNumbers;
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    if (page !== '...') {
+      onPageChange(page);
+    }
   };
 
   return (
     <div className="home-page">
-      {!isFilterActive && featuredProducts.length > 0 && !loadingFeatured && (
+      {/* Carousel */}
+      {!isFilterActive && currentPage === 1 && featuredProducts.length > 0 && !loadingFeatured && (
         <div className="carousel-container">
           <div className="carousel">
             {featuredProducts.map((product, index) => (
               <div
-                key={product.id}
+                key={`carousel-slide-${product._id || index}`}
                 className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
               >
                 <div className="carousel-content" onClick={handleCarouselClick}>
-                  <img src={product.image} alt={product.name} className="carousel-image" />
+                  <img src={product.images[0].url} alt={product.name} className="carousel-image" />
                   <div className="carousel-text">
                     <h2>{product.name}</h2>
-                    <p>{product.price}  €</p>
+                    <p>{product.price} €</p>
                     <button className="carousel-view-btn">Voir le produit</button>
                   </div>
                 </div>
               </div>
             ))}
 
-            <button
-              className="carousel-arrow carousel-arrow-left"
-              onClick={(e) => {
-                e.stopPropagation();
-                prevSlide();
-              }}
-            >
+            <button className="carousel-arrow carousel-arrow-left" onClick={prevSlide}>
               <ChevronLeft size={32} />
             </button>
 
-            <button
-              className="carousel-arrow carousel-arrow-right"
-              onClick={(e) => {
-                e.stopPropagation();
-                nextSlide();
-              }}
-            >
+            <button className="carousel-arrow carousel-arrow-right" onClick={nextSlide}>
               <ChevronRight size={32} />
             </button>
 
@@ -172,23 +223,11 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
               {featuredProducts.map((_, index) => (
                 <button
                   key={index}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentSlide(index);
-                  }}
+                  onClick={() => setCurrentSlide(index)}
                   className={`carousel-indicator ${index === currentSlide ? 'active' : ''}`}
                 />
               ))}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Show loading for carousel */}
-      {!isFilterActive && loadingFeatured && (
-        <div className="carousel-container">
-          <div className="carousel-loading">
-            Chargement des produits en vedette...
           </div>
         </div>
       )}
@@ -210,7 +249,10 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
               <h2 className="section-title">
                 {isFilterActive ? 'Résultats de la recherche' : 'Tous les Produits'}
               </h2>
-              <span className="results-count">{filteredProducts.length} produit(s) trouvé(s)</span>
+              <span className="results-count">
+                {filteredProductsCount} produit(s) trouvé(s)
+                {totalPages > 1 && ` - Page ${currentPage} sur ${totalPages}`}
+              </span>
               {isFilterActive && (
                 <button onClick={clearFilters} className="btn btn-secondary clear-filters-header-btn">
                   Afficher tous les produits
@@ -234,7 +276,7 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                     {categories.map((cat) => (
                       <button
                         key={cat}
-                        onClick={() => onCategoryChange(cat)}
+                        onClick={() => handleCategoryChange(cat)}
                         className={`filter-category ${selectedCategory === cat ? 'active' : ''}`}
                       >
                         {categoryNames[cat]}
@@ -251,42 +293,34 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                         min={0}
                         max={2000}
                         values={priceRange}
-                        onChange={setPriceRange}
-                        renderTrack={({ props, children }) => {
-                          const { key, ...restProps } = props;
-                          return (
-                            <div
-                              key={key}
-                              {...restProps}
-                              className="track"
-                              style={{
-                                ...restProps.style,
-                                background: `linear-gradient(to right, #d1d5db ${(priceRange[0] / 2000) * 100}%, #3b82f6 ${(priceRange[0] / 2000) * 100}%, #3b82f6 ${(priceRange[1] / 2000) * 100}%, #d1d5db ${(priceRange[1] / 2000) * 100}%)`,
-                              }}
-                            >
-                              {children}
-                            </div>
-                          );
-                        }}
-                        renderThumb={({ props, isDragged }) => {
-                          const { key, ...restProps } = props;
-                          return (
-                            <div
-                              key={key}
-                              {...restProps}
-                              className="thumb"
-                              style={{
-                                ...restProps.style,
-                                backgroundColor: isDragged ? '#3b82f6' : '#fff',
-                                border: '2px solid #3b82f6',
-                              }}
-                            />
-                          );
-                        }}
+                        onChange={handlePriceRangeChange}
+                        renderTrack={({ props, children }) => (
+                          <div
+                            {...props}
+                            className="track"
+                            style={{
+                              ...props.style,
+                              background: `linear-gradient(to right, #d1d5db ${(priceRange[0] / 2000) * 100}%, #3b82f6 ${(priceRange[0] / 2000) * 100}%, #3b82f6 ${(priceRange[1] / 2000) * 100}%, #d1d5db ${(priceRange[1] / 2000) * 100}%)`,
+                            }}
+                          >
+                            {children}
+                          </div>
+                        )}
+                        renderThumb={({ props, isDragged }) => (
+                          <div
+                            {...props}
+                            className="thumb"
+                            style={{
+                              ...props.style,
+                              backgroundColor: isDragged ? '#3b82f6' : '#fff',
+                              border: '2px solid #3b82f6',
+                            }}
+                          />
+                        )}
                       />
                       <div className="price-values">
-                        <span>{priceRange[0]}  €</span>
-                        <span>{priceRange[1]}  €</span>
+                        <span>{priceRange[0]} €</span>
+                        <span>{priceRange[1]} €</span>
                       </div>
                     </div>
                   </div>
@@ -294,7 +328,7 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
                   {/* Sort Dropdown */}
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => handleSortChange(e.target.value)}
                     className="sort-dropdown"
                   >
                     <option value="popularity">Popularité</option>
@@ -312,84 +346,69 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
 
             {/* Products Grid */}
             <div className={`products-grid-section ${showFilters ? 'with-filters' : ''}`}>
-              <div className="products-grid">
-                {currentProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onViewDetails={() => onNavigate('product', product.id)}
-                  />
-                ))}
-              </div>
-
-              {currentProducts.length === 0 && (
-                <div className="no-results">
-                  <p>Aucun produit trouvé avec les critères sélectionnés.</p>
-                  <button onClick={clearFilters} className="btn btn-primary">
-                    Réinitialiser les filtres
-                  </button>
+              {loading ? (
+                <div className="loading-container">
+                  <div className="loader-spinner"></div>
+                  <p>Chargement des produits...</p>
                 </div>
-              )}
+              ) : (
+                <>
+                  <div className="products-grid">
+                    {products && products.map((product) => (
+                      <ProductCard
+                        key={product._id}
+                        product={product}
+                        onViewDetails={() => handleViewDetails(product._id)}
+                      />
+                    ))}
+                  </div>
 
-              {totalPages > 1 && (
-                <div className="pagination">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="pagination-btn"
-                  >
-                    Précédent
-                  </button>
-                  
-                  <button
-                    onClick={() => setCurrentPage(1)}
-                    className={`pagination-btn ${currentPage === 1 ? 'active' : ''}`}
-                  >
-                    1
-                  </button>
-
-                  {currentPage > 3 && (
-                    <span className="pagination-ellipsis">...</span>
-                  )}
-
-                  {[...Array(totalPages)]
-                    .map((_, i) => i + 1)
-                    .filter(page => {
-                      if (page === 1 || page === totalPages) return false;
-                      return Math.abs(page - currentPage) <= 1;
-                    })
-                    .map(page => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
-                      >
-                        {page}
+                  {(!products || products.length === 0) && (
+                    <div className="no-results">
+                      <p>Aucun produit trouvé avec les critères sélectionnés.</p>
+                      <button onClick={clearFilters} className="btn btn-primary">
+                        Réinitialiser les filtres
                       </button>
-                    ))
-                  }
-
-                  {currentPage < totalPages - 2 && (
-                    <span className="pagination-ellipsis">...</span>
+                    </div>
                   )}
 
+                  {/* Pagination */}
                   {totalPages > 1 && (
-                    <button
-                      onClick={() => setCurrentPage(totalPages)}
-                      className={`pagination-btn ${currentPage === totalPages ? 'active' : ''}`}
-                    >
-                      {totalPages}
-                    </button>
+                    <div className="pagination">
+                      <button
+                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="pagination-btn"
+                      >
+                        Précédent
+                      </button>
+                      
+                      {getPageNumbers().map((pageNumber, index) => (
+                        pageNumber === '...' ? (
+                          <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                            ...
+                          </span>
+                        ) : (
+                          <button
+                            key={pageNumber}
+                            onClick={() => handlePageChange(pageNumber)}
+                            className={`pagination-btn ${currentPage === pageNumber ? 'active' : ''}`}
+                          >
+                            {pageNumber}
+                          </button>
+                        )
+                      ))}
+                      
+                      <button
+                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="pagination-btn"
+                      >
+                        Suivant
+                      </button>
+                    </div>
                   )}
-
-                  <button
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="pagination-btn"
-                  >
-                    Suivant
-                  </button>
-                </div>
+                </>
               )}
             </div>
           </div>
@@ -399,4 +418,4 @@ const HomePage = ({ products, onNavigate, searchQuery, selectedCategory, onCateg
   );
 };
 
-export default HomePage;
+export default HomePage; 

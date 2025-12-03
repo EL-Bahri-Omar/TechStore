@@ -1,54 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Heart } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext';
-import { useAlert } from '../contexts/AlertContext';
-import { AlertMessages } from '../utils/alertMessages';
+import { AlertMessages } from '../../utils/alertMessages';
+import { addToCart } from '../../actions/cartActions';
+import { toggleFavorite, checkFavorite } from '../../actions/favoritesActions';
+import { success, warning, info, error } from '../../actions/alertActions';
 
 const ProductCard = ({ product, onViewDetails }) => {
+  const dispatch = useDispatch();
+  const { user } = useSelector(state => state.auth);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
-  const { user, addToFavorites, isProductInFavorites } = useAuth();
-  const { addToCart } = useCart();
-  const { success, error: showError, info, warning } = useAlert();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [hasCheckedFavorite, setHasCheckedFavorite] = useState(false);
 
-  const isFavorite = isProductInFavorites(product.id);
+  const productId = product._id || product.id;
+
+  useEffect(() => {
+    if (user && productId && !hasCheckedFavorite) {
+      checkIfFavorite();
+      setHasCheckedFavorite(true);
+    }
+  }, [user, productId, hasCheckedFavorite]);
+
+  // Check if product is in favorites
+  const checkIfFavorite = async () => {
+    try {
+      const result = await dispatch(checkFavorite(productId));
+      if (result.success) {
+        setIsFavorite(result.isFavorite);
+      }
+    } catch (err) {
+      console.error('Error checking favorite:', err);
+    }
+  };
+
+  const productImages = product.images || [];
+  const productImage = productImages[0]?.url || productImages[0] || product.image || '/images/placeholder.jpg';
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
     
     if (product.stock === 0) {
-      warning(AlertMessages.OUT_OF_STOCK);
+      dispatch(warning(AlertMessages.OUT_OF_STOCK));
       return;
     }
 
-    addToCart(product, 1);
-    success(AlertMessages.ADD_TO_CART_SUCCESS);
+    dispatch(addToCart(product, 1));
+    dispatch(success(AlertMessages.ADD_TO_CART_SUCCESS));
   };
 
   const handleWishlistToggle = async (e) => {
     e.stopPropagation();
     
     if (!user) {
-      info(AlertMessages.FAVORITES_LOGIN_REQUIRED);
+      dispatch(info(AlertMessages.FAVORITES_LOGIN_REQUIRED));
       return;
     }
 
     setIsWishlistLoading(true);
-    const result = await addToFavorites(product.id);
-    
-    if (result.success) {
-      success(result.message);
-    } else {
-      showError(result.error);
+    try {
+      const result = await dispatch(toggleFavorite(productId));
+      if (result.success) {
+        setIsFavorite(result.isFavorite);
+        dispatch(success(result.message));
+      } else {
+        dispatch(error(result.error));
+      }
+    } catch (err) {
+      dispatch(error('Erreur lors de l\'ajout aux favoris'));
+    } finally {
+      setIsWishlistLoading(false);
     }
-    
-    setIsWishlistLoading(false);
   };
+
+  const reviewsCount = product.reviews?.length || 0;
 
   return (
     <div className="product-card" onClick={onViewDetails}>
       <div className="product-image">
-        <img src={product.image} alt={product.name} />
+        <img src={productImage} alt={product.name} onError={(e) => {
+          e.target.src = '/images/placeholder.jpg';
+        }} />
         <button
           onClick={handleWishlistToggle}
           className={`wishlist-btn ${isFavorite ? 'active' : ''} ${isWishlistLoading ? 'loading' : ''}`}
@@ -71,14 +103,14 @@ const ProductCard = ({ product, onViewDetails }) => {
           <div className="star-rating">
             {[...Array(5)].map((_, i) => (
               <span
-                key={i}
-                className={i < Math.floor(product.rating) ? 'star-filled' : 'star-empty'}
+                key={`star-${i}-${productId}`}
+                className={i < Math.floor(product.rating || 0) ? 'star-filled' : 'star-empty'}
               >
                 ★
               </span>
             ))}
           </div>
-          <span className="rating-text">({product.reviews.length} avis)</span>
+          <span className="rating-text">({reviewsCount} avis)</span>
         </div>
 
         <div className="product-details">

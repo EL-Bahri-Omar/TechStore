@@ -1,18 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, User, Menu, X, Search, ChevronDown } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { ShoppingCart, User, Search, ChevronDown } from 'lucide-react';
 import CategoriesNav from './CategoriesNav';
-import techStoreLogo from '../assets/techstore.png';
+import techStoreLogo from '../../assets/techstore.png';
+import { logout } from '../../actions/userActions';
 
-const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selectedCategory, onCategoryChange }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const Header = ({ searchQuery, onSearchChange, selectedCategory, onCategoryChange }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const { getCartItemsCount } = useCart();
-  const { user, logout } = useAuth();
   const dropdownRef = useRef(null);
 
-  const cartItemsCount = getCartItemsCount();
+  const { cartItems } = useSelector(state => state.cart);
+  const { user } = useSelector(state => state.auth);
+
+  const cartItemsCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -26,18 +30,31 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
   }, []);
 
   const handleLogout = () => {
-    logout();
-    onNavigate('home');
+    dispatch(logout());
+    navigate('/');
     setUserDropdownOpen(false);
   };
 
   const handleLogoClick = () => {
-    onNavigate('home');
+    navigate('/');
+    onSearchChange('');
+    window.scrollTo(0, 0);
+  };
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    setUserDropdownOpen(false);
+  };
+
+  const handleSearchChange = (query) => {
+    onSearchChange(query); 
   };
 
   const userInitials = user ? `${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}` : '';
 
-  const showCategoriesNav = ['home', 'product'].includes(currentPage);
+  // Handle showing categories nav based on current route
+  const currentPath = window.location.pathname;
+  const showCategoriesNav = currentPath === '/' || currentPath.includes('/product');
 
   return (
     <header className="header">
@@ -62,7 +79,7 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
                 type="text"
                 placeholder="Rechercher un produit..."
                 value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="header-form-input search-input"
               />
             </div>
@@ -70,7 +87,7 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
 
           <div className="header-actions">
             <button
-              onClick={() => onNavigate('cart')}
+              onClick={() => handleNavigation('/cart')}
               className="cart-icon"
             >
               <ShoppingCart size={26} />
@@ -111,28 +128,28 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
                     <div className="dropdown-divider" />
                     
                     <button
-                      onClick={() => { onNavigate('profile'); setUserDropdownOpen(false); }}
+                      onClick={() => handleNavigation('/me')}
                       className="dropdown-item"
                     >
                       Mon profil
                     </button>
                     
                     <button
-                      onClick={() => { onNavigate('orders'); setUserDropdownOpen(false); }}
+                      onClick={() => handleNavigation('/orders')}
                       className="dropdown-item"
                     >
                       Mes commandes
                     </button>
                     
                     <button
-                      onClick={() => { onNavigate('favorites'); setUserDropdownOpen(false); }}
+                      onClick={() => handleNavigation('/favorites')}
                       className="dropdown-item"
                     >
                       Mes favoris
                     </button>
                     
                     <button
-                      onClick={() => { onNavigate('addresses'); setUserDropdownOpen(false); }}
+                      onClick={() => handleNavigation('/addresses')}
                       className="dropdown-item"
                     >
                       Mes adresses
@@ -151,7 +168,7 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
               </div>
             ) : (
               <button
-                onClick={() => onNavigate('login')}
+                onClick={() => handleNavigation('/login')}
                 className="login-icon"
               >
                 <User size={26} />
@@ -159,39 +176,6 @@ const Header = ({ onNavigate, currentPage, searchQuery, onSearchChange, selected
             )}
           </div>
         </div>
-
-        {mobileMenuOpen && (
-          <div className="mobile-menu">
-            <button
-              onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
-              className="mobile-menu-item"
-            >
-              Accueil
-            </button>
-            {user && (
-              <>
-                <button
-                  onClick={() => { onNavigate('profile'); setMobileMenuOpen(false); }}
-                  className="mobile-menu-item"
-                >
-                  Mon profil
-                </button>
-                <button
-                  onClick={() => { onNavigate('orders'); setMobileMenuOpen(false); }}
-                  className="mobile-menu-item"
-                >
-                  Mes commandes
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="mobile-menu-item"
-                >
-                  Déconnexion
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {showCategoriesNav && (

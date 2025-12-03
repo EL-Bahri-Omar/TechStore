@@ -1,65 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Minus, Heart } from 'lucide-react';
-import StarRating from '../components/StarRating';
-import ProductCard from '../components/ProductCard';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
-import { useAlert } from '../contexts/AlertContext';
-import { AlertMessages } from '../utils/alertMessages';
+import StarRating from './StarRating';
+import ProductCard from '../product/ProductCard';
+import { AlertMessages } from '../../utils/alertMessages';
+import { getProductDetails } from '../../actions/productActions';
+import { addToCart } from '../../actions/cartActions';
+import { toggleFavorite, checkFavorite } from '../../actions/favoritesActions';
+import { success, warning, info, error } from '../../actions/alertActions';
 
-const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
+const ProductDetailPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  
+  const { product, loading } = useSelector(state => state.productDetails);
+  const { products } = useSelector(state => state.products);
+  const { user } = useSelector(state => state.auth);
+  
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
-  const { user, addToFavorites, isProductInFavorites } = useAuth();
-  const { success, error: showError, info, warning } = useAlert();
-  
-  const [isFavorite, setIsFavorite] = useState(isProductInFavorites(product?.id));
+  const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasCheckedFavorite, setHasCheckedFavorite] = useState(false);
 
-  if (!product) return null;
+  useEffect(() => {
+    if (id) {
+      dispatch(getProductDetails(id));
+    }
+  }, [dispatch, id]);
 
+  useEffect(() => {
+    if (product) {
+      setSelectedImage(0);
+      setQuantity(1);
+      
+      // Check if product is in favorites when product loads
+      if (user && product && !hasCheckedFavorite) {
+        checkIfFavorite();
+        setHasCheckedFavorite(true);
+      }
+    }
+    window.scrollTo(0, 0);
+  }, [product, user, hasCheckedFavorite]);
+
+  // Check if product is in favorites
+  const checkIfFavorite = async () => {
+    try {
+      const result = await dispatch(checkFavorite(product._id));
+      if (result.success) {
+        setIsFavorite(result.isFavorite);
+      }
+    } catch (err) {
+      console.error('Error checking favorite:', err);
+    }
+  };
+
+  // Get similar products
   const similarProducts = products
-    .filter(p => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+    ?.filter(p => p.category === product?.category && (p._id || p.id) !== (product?._id || product?.id))
+    .slice(0, 4) || [];
 
   const handleAddToCart = () => {
+    if (!product) return;
+    
     if (product.stock === 0) {
-      warning(AlertMessages.OUT_OF_STOCK);
+      dispatch(warning(AlertMessages.OUT_OF_STOCK));
       return;
     }
 
     if (quantity > product.stock) {
-      warning(`Seulement ${product.stock} unité(s) disponible(s)`);
+      dispatch(warning(`Seulement ${product.stock} unité(s) disponible(s)`));
       setQuantity(product.stock);
       return;
     }
 
-    addToCart(product, quantity);
-    success(AlertMessages.ADD_TO_CART_SUCCESS);
+    dispatch(addToCart(product, quantity));
+    dispatch(success(AlertMessages.ADD_TO_CART_SUCCESS));
   };
 
   const handleWishlistClick = async () => {
     if (!user) {
-      info(AlertMessages.FAVORITES_LOGIN_REQUIRED);
+      dispatch(info(AlertMessages.FAVORITES_LOGIN_REQUIRED));
+      return;
+    }
+
+    if (!product?._id) {
+      dispatch(error('Produit non trouvé'));
       return;
     }
 
     setIsLoading(true);
-    const result = await addToFavorites(product.id);
-    if (result.success) {
-      setIsFavorite(result.isFavorite);
-      success(result.message);
-    } else {
-      showError(result.error);
+    try {
+      const result = await dispatch(toggleFavorite(product._id));
+      if (result.success) {
+        setIsFavorite(result.isFavorite);
+        dispatch(success(result.message));
+      } else {
+        dispatch(error(result.error));
+      }
+    } catch (err) {
+      dispatch(error('Erreur lors de la modification des favoris'));
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleQuantityChange = (newQuantity) => {
+    if (!product) return;
+    
     if (newQuantity < 1) return;
     if (newQuantity > product.stock) {
-      warning(`Stock limité: ${product.stock} unité(s) maximum`);
+      dispatch(warning(`Stock limité: ${product.stock} unité(s) maximum`));
       setQuantity(product.stock);
       return;
     }
@@ -74,13 +127,46 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
     handleQuantityChange(quantity - 1);
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const productImages = product?.images || [];
+  const mainImage = productImages[selectedImage] || {};
+  const imageUrl = mainImage.url || mainImage || '/images/placeholder.jpg';
+
+  // Loading 
+  if (loading) {
+    return (
+      <div className="product-detail-page">
+        <div className="container">
+          <div className="loading">Chargement du produit...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (!product) {
+    return (
+      <div className="product-detail-page">
+        <div className="container">
+          <div className="error-state">
+            <h2>Produit non trouvé</h2>
+            <p>Le produit que vous recherchez n'existe pas ou n'est plus disponible.</p>
+            <button onClick={handleBack} className="btn btn-primary">
+              Retour à l'accueil
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="product-detail-page">
       <div className="container">
-        <button
-          onClick={onBack}
-          className="back-btn"
-        >
+        <button onClick={handleBack} className="back-btn">
           <ChevronLeft size={20} />
           Retour
         </button>
@@ -91,24 +177,37 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
             <div className="product-images">
               <div className="main-image">
                 <img
-                  src={product.images[selectedImage]}
+                  src={imageUrl}
                   alt={product.name}
+                  onError={(e) => {
+                    e.target.src = '/images/placeholder.jpg';
+                  }}
                 />
               </div>
-              <div className="image-thumbnails">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImage(idx)}
-                    className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
-                  >
-                    <img src={img} alt="" />
-                  </button>
-                ))}
-              </div>
+              
+              {/* Thumbnails */}
+              {productImages.length > 1 && (
+                <div className="image-thumbnails">
+                  {productImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
+                    >
+                      <img 
+                        src={img.url || img} 
+                        alt={`${product.name} ${idx + 1}`}
+                        onError={(e) => {
+                          e.target.src = '/images/placeholder.jpg';
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Details */}
+            {/* Product Details */}
             <div className="product-info">
               <div className="product-header">
                 <h1>{product.name}</h1>
@@ -123,8 +222,8 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
               </div>
               
               <div className="rating-section">
-                <StarRating rating={product.rating} size={20} />
-                <span>({product.reviews.length} avis)</span>
+                <StarRating rating={product.rating || 0} size={20} />
+                <span>({product.reviews?.length || 0} avis)</span>
               </div>
 
               <div className="price-large">
@@ -132,8 +231,9 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
               </div>
 
               <div className="stock-status">
-                <span className={`stock-badge ${product.stock > 10 ? 'in-stock' : 'low-stock'}`}>
-                  {product.stock > 10 ? 'En stock' : `Seulement ${product.stock} restant(s)`}
+                <span className={`stock-badge ${product.stock > 10 ? 'in-stock' : product.stock > 0 ? 'low-stock' : 'out-of-stock'}`}>
+                  {product.stock > 10 ? 'En stock' : 
+                   product.stock > 0 ? `Seulement ${product.stock} restant(s)` : 'Rupture de stock'}
                 </span>
                 {product.stock === 0 && (
                   <p className="field-error mt-2">
@@ -145,14 +245,17 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
 
               <p className="product-description">{product.description}</p>
 
-              <div className="features-section">
-                <h3>Caractéristiques :</h3>
-                <ul className="features-list">
-                  {product.features.map((feature, idx) => (
-                    <li key={idx}>✓ {feature}</li>
-                  ))}
-                </ul>
-              </div>
+              {/* Features */}
+              {product.features && product.features.length > 0 && (
+                <div className="features-section">
+                  <h3>Caractéristiques :</h3>
+                  <ul className="features-list">
+                    {product.features.map((feature, idx) => (
+                      <li key={idx}>✓ {feature}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="add-to-cart-section">
                 <div className="quantity-control">
@@ -174,30 +277,42 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
                 </div>
                 <button
                   onClick={handleAddToCart}
-                  className="btn btn-primary"
+                  className="btn btn-primary add-to-cart-btn"
                   disabled={product.stock === 0}
                 >
                   {product.stock === 0 ? 'Rupture de stock' : 'Ajouter au panier'}
                 </button>
               </div>
 
+              {/* Additional Info */}
+              <div className="additional-info">
+                <div className="info-item">
+                  <strong>Catégorie:</strong> {product.category}
+                </div>
+                <div className="info-item">
+                  <strong>Référence:</strong> {product._id}
+                </div>
+              </div>
+
               {/* Reviews */}
               <div className="reviews-section">
-                <h3>Avis clients ({product.reviews.length})</h3>
+                <h3>Avis clients ({product.reviews?.length || 0})</h3>
                 <div className="reviews-list">
-                  {product.reviews.length > 0 ? (
+                  {product.reviews && product.reviews.length > 0 ? (
                     product.reviews.map((review, idx) => (
                       <div key={idx} className="review-item">
                         <div className="review-header">
-                          <span className="review-user">{review.user}</span>
+                          <span className="review-user">{review.name || review.user || 'Utilisateur'}</span>
                           <StarRating rating={review.rating} size={14} />
-                          <span className="review-date">{review.date}</span>
+                          <span className="review-date">
+                            {review.createdAt ? new Date(review.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                          </span>
                         </div>
                         <p className="review-comment">{review.comment}</p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500">Aucun avis pour ce produit pour le moment.</p>
+                    <p className="no-reviews">Aucun avis pour ce produit pour le moment.</p>
                   )}
                 </div>
               </div>
@@ -212,9 +327,9 @@ const ProductDetailPage = ({ product, onBack, products, onNavigate }) => {
             <div className="similar-products-grid">
               {similarProducts.map((p) => (
                 <ProductCard
-                  key={p.id}
+                  key={p._id || p.id}
                   product={p}
-                  onViewDetails={() => onNavigate('product', p.id)}
+                  onViewDetails={() => navigate(`/product/${p._id || p.id}`)}
                 />
               ))}
             </div>

@@ -3,38 +3,38 @@ import React from 'react';
 const CategoriesNav = ({ selectedCategory, onCategoryChange }) => {
   const categories = [
     'all',
-    'informatique',
+    'Informatique',
     'Téléphonie & Tablette',
     'Stockage',
-    'impression',
+    'Impression',
     'Audio',
     'Accessoires',
-    'photo',
-    'Television'
+    'Photo',
+    'Télévision'
   ];
 
   const categoryIcons = {
     all: '🏠',
-    informatique: '💻',
+    Informatique: '💻',
     'Téléphonie & Tablette': '📱',
     Stockage: '💾',
-    impression: '🖨️',
+    Impression: '🖨️',
     Audio: '🎧',
     Accessoires: '⌨️',
-    photo: '📷',
-    Television: '📺'
+    Photo: '📷',
+    Télévision: '📺'
   };
 
   const categoryNames = {
     all: 'Toutes les catégories',
-    informatique: 'Informatique',
+    Informatique: 'Informatique',
     'Téléphonie & Tablette': 'Téléphonie & Tablette',
     Stockage: 'Stockage',
-    impression: 'Impression',
+    Impression: 'Impression',
     Audio: 'Audio',
     Accessoires: 'Accessoires',
-    photo: 'Photo',
-    Television: 'Télévision'
+    Photo: 'Photo',
+    Télévision: 'Télévision'
   };
 
   return (
