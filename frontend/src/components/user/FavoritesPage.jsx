@@ -1,41 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import ProductCard from './ProductCard';
-import { getUserWishlist } from '../services/firebaseService';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import ProductCard from '../product/ProductCard';
+import { getUserFavorites } from '../../actions/favoritesActions';
 
-const FavoritesPage = ({ onNavigate }) => {
-  const { user } = useAuth();
-  const [favoriteProducts, setFavoriteProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+const FavoritesPage = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  const { user } = useSelector(state => state.auth);
+  const { favorites, loading } = useSelector(state => state.favorites);
 
   useEffect(() => {
-    const fetchFavoriteProducts = async () => {
-      if (!user) {
-        setFavoriteProducts([]);
-        setLoading(false);
-        return;
-      }
+    if (user) {
+      dispatch(getUserFavorites());
+    }
+  }, [dispatch, user]);
 
-      try {
-        setLoading(true);
-        const favorites = await getUserWishlist(user.id);
-        setFavoriteProducts(favorites);
-      } catch (error) {
-        console.error('Error fetching favorite products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFavoriteProducts();
-  }, [user]);
+  const getProductKey = (product, index) => {
+    const productId = product._id || product.id;
+    if (!productId) {
+      return `fav-${index}-${Date.now()}`;
+    }
+    return `fav-${productId}`;
+  };
 
   if (!user) {
     return (
       <div className="container py-8">
         <div className="text-center">
           <p>Veuillez vous connecter pour voir vos favoris.</p>
-          <button onClick={() => onNavigate('login')} className="btn btn-primary mt-4">
+          <button onClick={() => navigate('/login')} className="btn btn-primary mt-4">
             Se connecter
           </button>
         </div>
@@ -58,20 +53,18 @@ const FavoritesPage = ({ onNavigate }) => {
       <div className="favorites-container">
         <h1 className="page-title mb-8">Mes favoris</h1>
         
-        {favoriteProducts.length > 0 ? (
+        {favorites.length > 0 ? (
           <div>
             <div className="favorites-count mb-6">
-              <p>
-                {favoriteProducts.length} produit(s) favori(s)
-              </p>
+              <p>{favorites.length} produit(s) favori(s)</p>
             </div>
             
             <div className="favorites-grid">
-              {favoriteProducts.map((product) => (
+              {favorites.map((product, index) => (
                 <ProductCard
-                  key={product.id}
+                  key={getProductKey(product, index)}
                   product={product}
-                  onViewDetails={() => onNavigate('product', product.id)}
+                  onViewDetails={() => navigate(`/product/${product._id || product.id}`)}
                 />
               ))}
             </div>
@@ -86,7 +79,7 @@ const FavoritesPage = ({ onNavigate }) => {
                 pour les retrouver facilement plus tard.
               </p>
               <button 
-                onClick={() => onNavigate('home')} 
+                onClick={() => navigate('/')} 
                 className="btn btn-primary"
               >
                 Découvrir nos produits

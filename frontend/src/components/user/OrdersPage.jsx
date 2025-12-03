@@ -1,18 +1,30 @@
-import React from 'react';
-import { Package, Truck, CheckCircle, Clock, MapPin, CreditCard, Download, RotateCcw, Eye } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { Package, Truck, CheckCircle, Clock, MapPin, CreditCard } from 'lucide-react';
+import { myOrders } from '../../actions/orderActions';
 
-const OrdersPage = ({ onNavigate }) => {
-  const { user } = useAuth();
+const OrdersPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
+  const { user } = useSelector(state => state.auth);
+  const { orders, loading } = useSelector(state => state.myOrders);
+
+  // Fetch user orders from Redux
+  useEffect(() => {
+    if (user) {
+      dispatch(myOrders());
+    }
+  }, [dispatch, user]);
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'confirmed':
-        return <Clock className="status-icon-white" size={24} />;
-      case 'shipped':
+      case 'Shipped':
         return <Truck className="status-icon-white" size={24} />;
-      case 'delivered':
+      case 'Delivered':
         return <CheckCircle className="status-icon-white" size={24} />;
+      case 'Processing':
       default:
         return <Package className="status-icon-white" size={24} />;
     }
@@ -20,12 +32,11 @@ const OrdersPage = ({ onNavigate }) => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'confirmed':
-        return 'Confirmée';
-      case 'shipped':
+      case 'Shipped':
         return 'Expédiée';
-      case 'delivered':
+      case 'Delivered':
         return 'Livrée';
+      case 'Processing':
       default:
         return 'En traitement';
     }
@@ -33,12 +44,11 @@ const OrdersPage = ({ onNavigate }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'confirmed':
-        return 'badge-warning';
-      case 'shipped':
+      case 'Shipped':
         return 'badge-info';
-      case 'delivered':
+      case 'Delivered':
         return 'badge-success';
+      case 'Processing':
       default:
         return 'badge-default';
     }
@@ -46,12 +56,11 @@ const OrdersPage = ({ onNavigate }) => {
 
   const getStatusGradient = (status) => {
     switch (status) {
-      case 'confirmed':
-        return 'status-gradient-warning';
-      case 'shipped':
+      case 'Shipped':
         return 'status-gradient-info';
-      case 'delivered':
+      case 'Delivered':
         return 'status-gradient-success';
+      case 'Processing':
       default:
         return 'status-gradient-default';
     }
@@ -67,7 +76,7 @@ const OrdersPage = ({ onNavigate }) => {
           <h1>Connexion requise</h1>
           <p>Veuillez vous connecter pour voir vos commandes.</p>
           <button 
-            onClick={() => onNavigate('login')} 
+            onClick={() => navigate('/login')} 
             className="btn-primary-lg"
           >
             Se connecter
@@ -77,7 +86,15 @@ const OrdersPage = ({ onNavigate }) => {
     );
   }
 
-  const orders = user.orders || [];
+  if (loading) {
+    return (
+      <div className="orders-page">
+        <div className="orders-container">
+          <div className="loading">Chargement de vos commandes...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="orders-page">
@@ -89,48 +106,47 @@ const OrdersPage = ({ onNavigate }) => {
           </div>
 
           {/* Statistiques */}
-        {orders.length > 0 && (
-          <div className="orders-stats">
-            <div className="stat-card">
-              <div className="stat-icon">
-                <Package size={28} />
+          {orders && orders.length > 0 && (
+            <div className="orders-stats">
+              <div className="stat-card">
+                <div className="stat-icon">
+                  <Package size={28} />
+                </div>
+                <p>Commandes totales : </p>      
+                <h3>{orders.length}</h3>
               </div>
-              <p>Commandes totales : </p>      
-              <h3>{orders.length}</h3>
-            </div>
-            
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-success">
-                <CheckCircle size={28} />
+              
+              <div className="stat-card">
+                <div className="stat-icon stat-icon-success">
+                  <CheckCircle size={28} />
+                </div>
+                <p>Commandes livrées : </p>
+                <h3>{orders.filter(order => order.orderStatus === 'Delivered').length}</h3>
               </div>
-              <p>Commandes livrées : </p>
-              <h3>{orders.filter(order => order.status === 'delivered').length}</h3>
-            </div>
-            
-            <div className="stat-card">
-              <div className="stat-icon stat-icon-info">
-                <Truck size={28} />
+              
+              <div className="stat-card">
+                <div className="stat-icon stat-icon-info">
+                  <Truck size={28} />
+                </div>
+                <p>En cours de livraison : </p>
+                <h3>{orders.filter(order => order.orderStatus === 'Shipped').length}</h3>
               </div>
-              <p>En cours de livraison : </p>
-              <h3>{orders.filter(order => order.status === 'shipped').length}</h3>
             </div>
-          </div>
           )}
-          
         </div>
 
-        {orders.length > 0 ? (
+        {orders && orders.length > 0 ? (
           <div className="orders-list">
             {orders
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
               .map((order) => (
-                <div key={order.id} className="order-card">
-                  <div className={`order-header ${getStatusGradient(order.status)}`}>
+                <div key={order._id} className="order-card">
+                  <div className={`order-header ${getStatusGradient(order.orderStatus)}`}>
                     <div className="order-header-content">
                       <div className="order-info">
-                        <h3>Commande {order.id}</h3>
+                        <h3>Commande {order._id?.slice(-8) || order._id}</h3>
                         <p>
-                          Passée le {new Date(order.date).toLocaleDateString('fr-FR', {
+                          Passée le {new Date(order.createdAt).toLocaleDateString('fr-FR', {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',
@@ -140,9 +156,9 @@ const OrdersPage = ({ onNavigate }) => {
                         </p>
                       </div>
                       <div className="order-status">
-                        {getStatusIcon(order.status)}
-                        <span className={`status-badge ${getStatusColor(order.status)}`}>
-                          {getStatusText(order.status)}
+                        {getStatusIcon(order.orderStatus)}
+                        <span className={`status-badge ${getStatusColor(order.orderStatus)}`}>
+                          {getStatusText(order.orderStatus)}
                         </span>
                       </div>
                     </div>
@@ -160,13 +176,13 @@ const OrdersPage = ({ onNavigate }) => {
                         </div>
                         <div className="detail-content">
                           <p className="detail-name">
-                            {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                            {order.shippingInfo.firstName} {order.shippingInfo.lastName}
                           </p>
-                          <p>{order.shippingAddress.address}</p>
+                          <p>{order.shippingInfo.address}</p>
                           <p>
-                            {order.shippingAddress.postalCode} {order.shippingAddress.city}
+                            {order.shippingInfo.postalCode} {order.shippingInfo.city}
                           </p>
-                          <p className="detail-country">{order.shippingAddress.country}</p>
+                          <p className="detail-country">{order.shippingInfo.country}</p>
                         </div>
                       </div>
 
@@ -179,9 +195,9 @@ const OrdersPage = ({ onNavigate }) => {
                               <h4>Livraison</h4>
                             </div>
                             <div className="detail-item-content">
-                              <p className="detail-item-title">{order.shippingMethod.name}</p>
-                              <p className="detail-item-description">{order.shippingMethod.duration}</p>
-                              <p className="detail-item-price">{order.shippingMethod.price} €</p>
+                              <p className="detail-item-title">Standard</p>
+                              <p className="detail-item-description">3-5 jours ouvrables</p>
+                              <p className="detail-item-price">{order.shippingPrice?.toFixed(2) || '0.00'} €</p>
                             </div>
                           </div>
                           
@@ -194,7 +210,8 @@ const OrdersPage = ({ onNavigate }) => {
                               <p className="detail-item-title">
                                 {order.paymentMethod === 'card' && 'Carte de crédit'}
                                 {order.paymentMethod === 'paypal' && 'PayPal'}
-                                {order.paymentMethod === 'applepay' && 'Apple Pay'}
+                                {order.paymentMethod === 'bank_transfer' && 'Virement bancaire'}
+                                {order.paymentMethod || 'Non spécifié'}
                               </p>
                               <p className="detail-item-description">Paiement sécurisé</p>
                             </div>
@@ -207,11 +224,11 @@ const OrdersPage = ({ onNavigate }) => {
                     <div className="order-items-section">
                       <h4 className="order-items-title">
                         <Package size={24} />
-                        Articles commandés ({order.items.length})
+                        Articles commandés ({order.orderItems?.length || 0})
                       </h4>
                       <div className="order-items-list">
-                        {order.items.map((item) => (
-                          <div key={item.id} className="order-item">
+                        {order.orderItems?.map((item) => (
+                          <div key={item._id || item.id} className="order-item">
                             <img
                               src={item.image}
                               alt={item.name}
@@ -235,11 +252,11 @@ const OrdersPage = ({ onNavigate }) => {
                     <div className="order-footer">
                       <div className="order-summary">
                         <div className="order-summary-info">
-                          {order.items.length} article(s) • Livraison: {order.shippingMethod.price} €
+                          {order.orderItems?.length || 0} article(s) • Livraison: {order.shippingPrice?.toFixed(2) || '0.00'} €
                         </div>
                         <div className="order-total">
-                          <p>{order.orderSummary.total.toFixed(2)} €</p>
-                          <p>Dont {order.orderSummary.tax.toFixed(2)} € de TVA</p>
+                          <p>{order.totalPrice?.toFixed(2) || '0.00'} €</p>
+                          <p>Dont {((order.totalPrice - order.shippingPrice) * 0.2).toFixed(2)} € de TVA</p>
                         </div>
                       </div>
                     </div>
@@ -259,7 +276,7 @@ const OrdersPage = ({ onNavigate }) => {
                 ce qui vous convient le mieux.
               </p>
               <button 
-                onClick={() => onNavigate('home')} 
+                onClick={() => navigate('/')} 
                 className="btn-primary-lg"
               >
                 Découvrir nos produits
@@ -267,8 +284,6 @@ const OrdersPage = ({ onNavigate }) => {
             </div>
           </div>
         )}
-
-        
       </div>
     </div>
   );
