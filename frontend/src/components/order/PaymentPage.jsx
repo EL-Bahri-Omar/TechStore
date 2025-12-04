@@ -1,405 +1,460 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { 
+    Elements,
+    useStripe,
+    useElements,
+    CardNumberElement,
+    CardExpiryElement,
+    CardCvcElement
+} from '@stripe/react-stripe-js';
 import { ChevronLeft, Shield, CheckCircle, CreditCard, Lock } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
-import { useAlert } from '../contexts/AlertContext';
-import { AlertMessages } from '../utils/alertMessages';
+import { AlertMessages } from '../../utils/alertMessages';
+import { createOrder } from '../../actions/orderActions';
+import { clearCart } from '../../actions/cartActions';
+import { success, error } from '../../actions/alertActions';
+import { processPayment, getStripeKey, clearPaymentErrors } from '../../actions/paymentActions';
 
-const PaymentPage = ({ onNavigate, orderData }) => {
-  const { cart, createOrder } = useCart();
-  const { user } = useAuth();
-  const { error: showError, success: showSuccess } = useAlert();
-  
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvv: ''
-  });
+let stripePromise = null;
 
-  const [errors, setErrors] = useState({});
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+// Stripe Card Form Component
+const StripePaymentForm = ({ 
+    total,
+    orderData,
+    onPaymentSuccess,
+    isProcessing,
+    setIsProcessing 
+}) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const dispatch = useDispatch();
 
-  const validateCardDetails = () => {
-    const newErrors = {};
-    
-    if (!cardDetails.number.trim()) {
-      newErrors.number = 'Le numéro de carte est requis';
-    } else if (cardDetails.number.replace(/\s/g, '').length !== 16) {
-      newErrors.number = 'Le numéro de carte doit contenir 16 chiffres';
-    }
-    
-    if (!cardDetails.name.trim()) {
-      newErrors.name = 'Le nom sur la carte est requis';
-    }
-    
-    if (!cardDetails.expiry.trim()) {
-      newErrors.expiry = "La date d'expiration est requise";
-    } else if (!/^\d{2}\/\d{2}$/.test(cardDetails.expiry)) {
-      newErrors.expiry = "Format invalide (MM/AA requis)";
-    }
-    
-    if (!cardDetails.cvv.trim()) {
-      newErrors.cvv = 'Le code de sécurité est requis';
-    } else if (cardDetails.cvv.length !== 3) {
-      newErrors.cvv = 'Le code CVV doit contenir 3 chiffres';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handlePayment = async (e) => {
-    e?.preventDefault();
-    
-    if (!validateCardDetails()) {
-      showError(AlertMessages.PAYMENT_INFO_REQUIRED);
-      return;
-    }
-
-    setIsProcessing(true);
-
-    setTimeout(async () => {
-      try {
-        const result = await createOrder({
-          shippingAddress: orderData.shippingAddress,
-          shippingMethod: orderData.shippingMethod,
-          paymentMethod: orderData.paymentMethod,
-          orderSummary: orderData.orderSummary
-        });
-
-        if (result.success) {
-          showSuccess(AlertMessages.PAYMENT_SUCCESS);
-          setIsSuccess(true);
-          setTimeout(() => {
-            onNavigate('confirmation', result.orderId);
-          }, 2000);
-        } else {
-          showError(result.error || AlertMessages.PAYMENT_ERROR);
-          setIsProcessing(false);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!stripe || !elements) {
+            dispatch(error('Système de paiement non disponible'));
+            return;
         }
-      } catch (error) {
-        showError(AlertMessages.PAYMENT_ERROR);
-        setIsProcessing(false);
-      }
-    }, 3000);
-  };
 
-  const handleInputChange = (field, value) => {
-    setCardDetails(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
+        setIsProcessing(true);
+        dispatch(clearPaymentErrors());
 
-  const formatCardNumber = (value) => {
-    return value.replace(/\W/gi, '').replace(/(.{4})/g, '$1 ').trim();
-  };
+        try {
+            // Create payment method
+            const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: elements.getElement(CardNumberElement),
+            });
 
-  const formatExpiry = (value) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length >= 3) {
-      return cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4);
-    }
-    return cleaned;
-  };
+            if (stripeError) {
+                dispatch(error(stripeError.message));
+                setIsProcessing(false);
+                return;
+            }
 
-  const formatCVV = (value) => {
-    return value.replace(/\D/g, '').slice(0, 3);
-  };
+            console.log('✅ Card validated by Stripe:', paymentMethod.id);
 
-  if (isSuccess) {
+            // Process payment through Redux action
+            const paymentResult = await dispatch(processPayment(paymentMethod.id, total));
+
+            if (paymentResult.success) {
+                console.log('✅ Payment processed successfully');
+                
+                // Create order with payment info
+                const orderWithPayment = {
+                    ...orderData,
+                    paymentInfo: {
+                        id: paymentResult.data.payment_intent_id,
+                        status: 'paid'
+                    }
+                };
+
+                const orderResult = await dispatch(createOrder(orderWithPayment));
+
+                if (orderResult.success) {
+                    onPaymentSuccess({
+                        orderId: orderResult.order._id
+                    });
+                } else {
+                    dispatch(error(orderResult.error));
+                    setIsProcessing(false);
+                }
+            } else {
+                dispatch(error(paymentResult.error || 'Erreur de traitement du paiement'));
+                setIsProcessing(false);
+            }
+
+        } catch (err) {
+            console.error('Payment processing error:', err);
+            dispatch.error(err.message || AlertMessages.PAYMENT_ERROR);
+            setIsProcessing(false);
+        }
+    };
+
+    const cardElementOptions = {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#424770',
+                '::placeholder': {
+                    color: '#aab7c4',
+                },
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+            },
+            invalid: {
+                color: '#9e2146',
+                iconColor: '#9e2146',
+            },
+        },
+    };
+
     return (
-      <div className="payment-success">
-        <div className="payment-success-content">
-          <div className="success-icon">
-            <CheckCircle size={48} />
-          </div>
-          <h1>Paiement réussi !</h1>
-          <p>Redirection vers la confirmation...</p>
-          <div className="loading-spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="payment-page">
-      <div className="payment-container">
-        <div className="payment-header">
-          <button
-            onClick={() => onNavigate('checkout')}
-            className="back-button"
-          >
-            <ChevronLeft size={20} />
-            <span>Retour au checkout</span>
-          </button>
-          
-          <div className="payment-steps">
-            <h1>Paiement sécurisé</h1>
-            <div className="progress-steps">
-              {['Panier', 'Livraison', 'Paiement', 'Confirmation'].map((step, index) => (
-                <div key={step} className="progress-step-container">
-                  <div className={`progress-step ${
-                    index <= 1 
-                      ? 'progress-step-completed' 
-                      : index === 2
-                      ? 'progress-step-active'
-                      : 'progress-step-upcoming'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <span className={`step-label ${index <= 2 ? 'step-active' : 'step-inactive'}`}>
-                    {step}
-                  </span>
-                  {index < 3 && (
-                    <div className={`step-connector ${index < 2 ? 'connector-active' : 'connector-inactive'}`} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="payment-content">
-          {/* Formulaire de paiement */}
-          <div className="payment-form-section">
-            <div className="payment-form-card">
-              <div className="payment-form-header">
-                <div className="payment-form-icon">
-                  <Lock size={24} />
-                </div>
-                <div>
-                  <h2>Informations de paiement</h2>
-                  <p>Saisissez les détails de votre carte en toute sécurité</p>
-                </div>
-              </div>
-
-              <div className="payment-form">
-                {/* Carte visuelle */}
-                <div className="payment-card-visual">
-                  <div className="card-header">
-                    <div className="card-logos">
-                      <div className="card-logo-yellow"></div>
-                      <div className="card-logo-red"></div>
+        <form onSubmit={handleSubmit} className="payment-form">
+            <div className="payment-form-fields">
+                <div className="form-group-enhanced">
+                    <label>Numéro de carte *</label>
+                    <div className="stripe-element-container">
+                        <CardNumberElement options={cardElementOptions} />
                     </div>
-                    <div className="card-balance">
-                      <div>Solde disponible</div>
-                      <div>{orderData?.orderSummary?.total.toFixed(2)} €</div>
-                    </div>
-                  </div>
-                  <div className="card-number">
-                    {cardDetails.number || '•••• •••• •••• ••••'}
-                  </div>
-                  <div className="card-footer">
-                    <div>
-                      <div>Titulaire de la carte</div>
-                      <div>{cardDetails.name || 'VOTRE NOM'}</div>
-                    </div>
-                    <div className="card-expiry">
-                      <div>Date d'expiration</div>
-                      <div>{cardDetails.expiry || 'MM/AA'}</div>
-                    </div>
-                  </div>
                 </div>
 
-                {/* Champs du formulaire */}
-                <div className="payment-form-fields">
-                  <div className="form-group-enhanced">
-                    <label>
-                      Numéro de carte *
-                    </label>
-                    <div className="input-with-icon">
-                      <CreditCard className="input-icon" size={20} />
-                      <input
-                        type="text"
-                        placeholder="1234 5678 9012 3456"
-                        value={cardDetails.number}
-                        onChange={(e) => handleInputChange('number', formatCardNumber(e.target.value))}
-                        className={`form-input-enhanced card-number-input ${errors.number ? 'error' : ''}`}
-                        maxLength="19"
-                        required
-                      />
-                    </div>
-                    {errors.number && (
-                      <p className="field-error">
-                        <span className="field-error-icon">⚠</span>
-                        {errors.number}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="form-group-enhanced">
-                    <label>
-                      Nom sur la carte *
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="JEAN DUPONT"
-                      value={cardDetails.name}
-                      onChange={(e) => handleInputChange('name', e.target.value.toUpperCase())}
-                      className={`form-input-enhanced card-name-input ${errors.name ? 'error' : ''}`}
-                      required
-                    />
-                    {errors.name && (
-                      <p className="field-error">
-                        <span className="field-error-icon">⚠</span>
-                        {errors.name}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="form-group-enhanced">
-                    <label>
-                      Date d'expiration *
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="MM/AA"
-                      value={cardDetails.expiry}
-                      onChange={(e) => handleInputChange('expiry', formatExpiry(e.target.value))}
-                      className={`form-input-enhanced ${errors.expiry ? 'error' : ''}`}
-                      maxLength="5"
-                      required
-                    />
-                    {errors.expiry && (
-                      <p className="field-error">
-                        <span className="field-error-icon">⚠</span>
-                        {errors.expiry}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="form-group-enhanced">
-                    <label>
-                      Code de sécurité *
-                    </label>
-                    <div className="input-with-icon">
-                      <Shield className="input-icon" size={20} />
-                      <input
-                        type="text"
-                        placeholder="123"
-                        value={cardDetails.cvv}
-                        onChange={(e) => handleInputChange('cvv', formatCVV(e.target.value))}
-                        className={`form-input-enhanced card-cvv-input ${errors.cvv ? 'error' : ''}`}
-                        maxLength="3"
-                        required
-                      />
-                    </div>
-                    {errors.cvv && (
-                      <p className="field-error">
-                        <span className="field-error-icon">⚠</span>
-                        {errors.cvv}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sécurité */}
-                <div className="security-notice-card">
-                  <div className="security-content">
-                    <div className="security-icon">
-                      <Shield size={24} />
-                    </div>
-                    <div>
-                      <div className="security-title">
-                        Paiement 100% sécurisé
-                      </div>
-                      <div className="security-description">
-                        Vos données bancaires sont cryptées et protégées par la technologie SSL
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Récapitulatif */}
-          <div className="payment-summary">
-            <div className="summary-card">
-              <h2>Votre commande</h2>
-              
-              <div className="summary-content">
-                <div className="summary-section">
-                  <h3>
-                    <CreditCard size={18} />
-                    Livraison
-                  </h3>
-                  <div className="shipping-address">
-                    <p>
-                      {orderData?.shippingAddress?.firstName} {orderData?.shippingAddress?.lastName}
-                    </p>
-                    <p>
-                      {orderData?.shippingAddress?.address}<br />
-                      {orderData?.shippingAddress?.postalCode} {orderData?.shippingAddress?.city}
-                    </p>
-                    {!user && (
-                      <p className="guest-notice">
-                        Commande en tant qu'invité
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="summary-section">
-                  <h3>Articles</h3>
-                  <div className="order-items-summary">
-                    {cart.map((item) => (
-                      <div key={item.id} className="order-item-summary">
-                        <div>
-                          <span>{item.name}</span>
-                          <span>x{item.quantity}</span>
+                <div className="form-row">
+                    <div className="form-group-enhanced">
+                        <label>Date d'expiration *</label>
+                        <div className="stripe-element-container">
+                            <CardExpiryElement options={cardElementOptions} />
                         </div>
-                        <span>{(item.price * item.quantity).toFixed(2)} €</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="summary-totals">
-                  {[
-                    { label: 'Sous-total', value: orderData?.orderSummary?.subtotal.toFixed(2) },
-                    { label: 'Livraison', value: orderData?.orderSummary?.shipping.toFixed(2) },
-                    { label: 'TVA (20%)', value: orderData?.orderSummary?.tax.toFixed(2) },
-                  ].map((item, index) => (
-                    <div key={index} className="total-row">
-                      <span>{item.label}</span>
-                      <span>{item.value} €</span>
                     </div>
-                  ))}
-                  
-                  <div className="grand-total">
-                    <span>Total</span>
-                    <span>{orderData?.orderSummary?.total.toFixed(2)} €</span>
-                  </div>
+
+                    <div className="form-group-enhanced">
+                        <label>Code de sécurité (CVC) *</label>
+                        <div className="stripe-element-container">
+                            <CardCvcElement options={cardElementOptions} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="security-notice-card">
+                <div className="security-content">
+                    <div className="security-icon">
+                        <Shield size={24} />
+                    </div>
+                    <div>
+                        <div className="security-title">
+                            Paiement 100% sécurisé par Stripe
+                        </div>
+                        <div className="security-description">
+                            Vos données bancaires sont cryptées et protégées par Stripe. 
+                            Aucune information de carte n'est stockée sur nos serveurs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                disabled={!stripe || isProcessing}
+                className="btn-primary-xl payment-submit-btn"
+            >
+                {isProcessing ? (
+                    <>
+                        <div className="loader-spinner"></div>
+                        Traitement en cours...
+                    </>
+                ) : (
+                    <>
+                        Payer {total.toFixed(2)} €
+                        <Lock size={20} />
+                    </>
+                )}
+            </button>
+        </form>
+    );
+};
+
+// Main Payment Page Component
+const PaymentPage = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    
+    const { cartItems, shippingInfo } = useSelector(state => state.cart);
+    const { loading: orderLoading } = useSelector(state => state.newOrder);
+    const { stripeApiKey, loading: paymentLoading } = useSelector(state => state.payment);
+    
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [stripeLoaded, setStripeLoaded] = useState(false);
+
+    // Calculate order totals
+    const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const shippingCost = shippingInfo?.shippingPrice || 4.99;
+    const tax = subtotal * 0.2;
+    const total = subtotal + shippingCost + tax;
+
+    // Get shipping method name
+    const getShippingMethodName = () => {
+        if (!shippingInfo?.shippingMethod) return 'Livraison Standard';
+        const methods = {
+            'standard': 'Livraison Standard',
+            'express': 'Livraison Express', 
+            'priority': 'Livraison Prioritaire'
+        };
+        return methods[shippingInfo.shippingMethod] || 'Livraison Standard';
+    };
+
+    // Prepare order data
+    const orderData = {
+        orderItems: cartItems.map(item => ({
+            id: item.id || item._id,
+            name: item.name,
+            quantity: Number(item.quantity),
+            price: Number(item.price),
+            image: item.image
+        })),
+        shippingInfo: {
+            firstName: shippingInfo.firstName || '',
+            lastName: shippingInfo.lastName || '',
+            address: shippingInfo.address || '',
+            city: shippingInfo.city || '',
+            postalCode: shippingInfo.postalCode || '',
+            country: shippingInfo.country || '',
+            phone: shippingInfo.phone || ''
+        },
+        paymentMethod: 'card',
+        shippingMethod: shippingInfo.shippingMethod || 'standard',
+        itemsPrice: Number(subtotal.toFixed(2)),
+        shippingPrice: Number(shippingCost.toFixed(2)),
+        taxPrice: Number(tax.toFixed(2)),
+        totalPrice: Number(total.toFixed(2))
+    };
+
+    // Initialize Stripe using Redux action
+    useEffect(() => {
+        const initializeStripe = async () => {
+            if (!stripeApiKey) {
+                // Get Stripe key through Redux action
+                const result = await dispatch(getStripeKey());
+                
+                if (result.success && result.stripeApiKey) {
+                    stripePromise = loadStripe(result.stripeApiKey);
+                    setStripeLoaded(true);
+                    console.log('✅ Stripe loaded successfully');
+                } else {
+                    console.error('❌ Failed to get Stripe key:', result.error);
+                    dispatch(error('Erreur de chargement du système de paiement'));
+                }
+            } else if (stripeApiKey && !stripeLoaded) {
+                // Stripe key already exists in Redux state
+                stripePromise = loadStripe(stripeApiKey);
+                setStripeLoaded(true);
+            }
+        };
+
+        initializeStripe();
+    }, [dispatch, stripeApiKey, stripeLoaded]);
+
+    const handlePaymentSuccess = (paymentResult) => {
+        dispatch(success(AlertMessages.PAYMENT_SUCCESS));
+        setIsSuccess(true);
+        dispatch(clearCart());
+        
+        setTimeout(() => {
+            navigate('/confirmation', { 
+                state: { 
+                    orderId: paymentResult.orderId,
+                    orderTotal: total 
+                } 
+            });
+        }, 2000);
+    };
+
+    // Success state
+    if (isSuccess) {
+        return (
+            <div className="payment-success">
+                <div className="payment-success-content">
+                    <div className="success-icon">
+                        <CheckCircle size={48} />
+                    </div>
+                    <h1>Paiement réussi !</h1>
+                    <p>Redirection vers la confirmation...</p>
+                    <div className="loading-spinner"></div>
+                </div>
+            </div>
+        );
+    }
+
+    // Error states
+    if (cartItems.length === 0) {
+        return (
+            <div className="payment-empty">
+                <div className="payment-empty-content">
+                    <div className="payment-empty-icon">
+                        <CreditCard size={48} />
+                    </div>
+                    <h1>Panier vide</h1>
+                    <p>Votre panier est vide, impossible de procéder au paiement.</p>
+                    <button 
+                        onClick={() => navigate('/')}
+                        className="btn-primary-lg"
+                    >
+                        Découvrir les produits
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!shippingInfo) {
+        return (
+            <div className="payment-empty">
+                <div className="payment-empty-content">
+                    <div className="payment-empty-icon">
+                        <Shield size={48} />
+                    </div>
+                    <h1>Informations manquantes</h1>
+                    <p>Veuillez compléter vos informations de livraison avant de payer.</p>
+                    <button 
+                        onClick={() => navigate('/checkout')}
+                        className="btn-primary-lg"
+                    >
+                        Retour à la livraison
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Show loading while initializing Stripe
+    if (paymentLoading || (!stripeLoaded && !stripeApiKey)) {
+        return (
+            <div className="payment-page">
+                <div className="payment-container">
+                    <div className="loading-stripe">
+                        <div className="loader-spinner"></div>
+                        <p>Chargement du système de paiement...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="payment-page">
+            <div className="payment-container">
+                <div className="payment-header">
+                    <button
+                        onClick={() => navigate('/checkout')}
+                        className="back-button"
+                    >
+                        <ChevronLeft size={20} />
+                        <span>Retour au checkout</span>
+                    </button>
+                    
+                    <div className="payment-steps">
+                        <h1>Paiement sécurisé</h1>
+                        <div className="progress-steps">
+                            {['Panier', 'Livraison', 'Paiement', 'Confirmation'].map((step, index) => (
+                                <div key={`payment-step-${index}`} className="progress-step-container">
+                                    <div className={`progress-step ${
+                                        index <= 1 ? 'progress-step-completed' : 
+                                        index === 2 ? 'progress-step-active' : 'progress-step-upcoming'
+                                    }`}>
+                                        {index + 1}
+                                    </div>
+                                    <span className={`step-label ${index <= 2 ? 'step-active' : 'step-inactive'}`}>
+                                        {step}
+                                    </span>
+                                    {index < 3 && (
+                                        <div className={`step-connector ${index < 2 ? 'connector-active' : 'connector-inactive'}`} />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
-                <button
-                  onClick={handlePayment}
-                  disabled={isProcessing}
-                  className="btn-primary-xl payment-submit-btn"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="loader-spinner"></div>
-                      Traitement en cours...
-                    </>
-                  ) : (
-                    <>
-                      Payer {orderData?.orderSummary?.total.toFixed(2)} €
-                      <Lock size={20} />
-                    </>
-                  )}
-                </button>
-              </div>
+                <div className="payment-content">
+                    <div className="payment-form-section">
+                        <div className="payment-form-card">
+                            <div className="payment-form-header">
+                                <div className="payment-form-icon">
+                                    <Lock size={24} />
+                                </div>
+                                <div>
+                                    <h2>Paiement sécurisé par Stripe</h2>
+                                    <p>Saisissez les détails de votre carte</p>
+                                </div>
+                            </div>
+
+                            {stripeLoaded && stripePromise ? (
+                                <Elements stripe={stripePromise}>
+                                    <StripePaymentForm
+                                        total={total}
+                                        orderData={orderData}
+                                        onPaymentSuccess={handlePaymentSuccess}
+                                        isProcessing={isProcessing || orderLoading}
+                                        setIsProcessing={setIsProcessing}
+                                    />
+                                </Elements>
+                            ) : (
+                                <div className="loading-stripe">
+                                    <div className="loader-spinner"></div>
+                                    <p>Chargement du système de paiement...</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="payment-summary">
+                        <div className="summary-card">
+                            <h2>Votre commande</h2>
+                            
+                            <div className="summary-content">
+                                <div className="summary-section">
+                                    <h3><CreditCard size={18} />Livraison</h3>
+                                    <div className="shipping-address">
+                                        <p>{shippingInfo.firstName} {shippingInfo.lastName}</p>
+                                        <p>{shippingInfo.address}<br />{shippingInfo.postalCode} {shippingInfo.city}</p>
+                                        <p>{shippingInfo.country}</p>
+                                        {shippingInfo.phone && <p>Tél: {shippingInfo.phone}</p>}
+                                        <p><strong>Mode de livraison:</strong> {getShippingMethodName()}</p>
+                                    </div>
+                                </div>
+
+                                <div className="summary-section">
+                                    <h3>Articles</h3>
+                                    <div className="order-items-summary">
+                                        {cartItems.map((item) => (
+                                            <div key={`payment-item-${item.id}`} className="order-item-summary">
+                                                <div>
+                                                    <span>{item.name}</span>
+                                                    <span>x{item.quantity}</span>
+                                                </div>
+                                                <span>{(item.price * item.quantity).toFixed(2)} €</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="summary-totals">
+                                    <div className="total-row"><span>Sous-total</span><span>{subtotal.toFixed(2)} €</span></div>
+                                    <div className="total-row"><span>Livraison</span><span>{shippingCost.toFixed(2)} €</span></div>
+                                    <div className="total-row"><span>TVA (20%)</span><span>{tax.toFixed(2)} €</span></div>
+                                    <div className="grand-total"><span>Total</span><span>{total.toFixed(2)} €</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default PaymentPage;

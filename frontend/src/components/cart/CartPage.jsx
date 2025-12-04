@@ -1,41 +1,54 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import { ShoppingCart, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { useAlert } from '../contexts/AlertContext';
-import { AlertMessages } from '../utils/alertMessages';
+import { AlertMessages } from '../../utils/alertMessages';
+import { addToCart, removeFromCart, updateCartItem, clearCart } from '../../actions/cartActions';
+import { success, error } from '../../actions/alertActions';
 
-const CartPage = ({ onNavigate }) => {
-  const { cart, updateQuantity, removeItem, getCartTotal, getCartItemsCount, clearCart } = useCart();
-  const { success, error: showError } = useAlert();
+const CartPage = () => { 
+  const dispatch = useDispatch();
+  const navigate = useNavigate(); // Add useNavigate hook
+  const { cartItems } = useSelector(state => state.cart);
+  const { user } = useSelector(state => state.auth);
 
-  const handleUpdateQuantity = (productId, newQuantity) => {
-    updateQuantity(productId, newQuantity);
+  const handleUpdateQuantity = (product, newQuantity) => {
     if (newQuantity === 0) {
-      success(AlertMessages.REMOVE_FROM_CART_SUCCESS);
+      dispatch(removeFromCart(product.id));
+      dispatch(success(AlertMessages.REMOVE_FROM_CART_SUCCESS));
     } else {
-      success(AlertMessages.CART_UPDATE_SUCCESS);
+      dispatch(updateCartItem(product.id, newQuantity));
+      dispatch(success(AlertMessages.CART_UPDATE_SUCCESS));
     }
   };
 
   const handleRemoveItem = (productId) => {
-    removeItem(productId);
-    success(AlertMessages.REMOVE_FROM_CART_SUCCESS);
+    dispatch(removeFromCart(productId));
+    dispatch(success(AlertMessages.REMOVE_FROM_CART_SUCCESS));
   };
 
   const handleClearCart = () => {
-    clearCart();
-    success(AlertMessages.CART_CLEAR_SUCCESS);
+    dispatch(clearCart());
+    dispatch(success(AlertMessages.CART_CLEAR_SUCCESS));
   };
 
   const handleProceedToCheckout = () => {
-    if (cart.length === 0) {
-      showError(AlertMessages.CART_EMPTY_ERROR);
+    if (cartItems.length === 0) {
+      dispatch(error(AlertMessages.CART_EMPTY_ERROR));
       return;
     }
-    onNavigate('checkout');
+    navigate('/checkout');
   };
 
-  if (cart.length === 0) {
+  const getCartTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const getCartItemsCount = () => {
+    return cartItems.reduce((count, item) => count + item.quantity, 0);
+  };
+
+  if (cartItems.length === 0) {
     return (
       <div className="empty-cart">
         <div className="empty-cart-content">
@@ -43,7 +56,7 @@ const CartPage = ({ onNavigate }) => {
           <h2>Votre panier est vide</h2>
           <p>Ajoutez des produits à votre panier pour continuer vos achats.</p>
           <button
-            onClick={() => onNavigate('home')}
+            onClick={() => navigate('/')}
             className="btn btn-primary"
           >
             Continuer vos achats
@@ -65,8 +78,8 @@ const CartPage = ({ onNavigate }) => {
         
         <div className="cart-layout">
           <div className="cart-items-section">
-            {cart.map((item) => (
-              <div key={item.id} className="cart-item">
+            {cartItems.map((item) => (
+              <div key={`cart-item-${item.id}`} className="cart-item">
                 <div className="cart-item-content">
                   <img
                     src={item.image}
@@ -79,7 +92,7 @@ const CartPage = ({ onNavigate }) => {
                     <div className="cart-item-controls">
                       <div className="quantity-control">
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
                           className="quantity-btn"
                           disabled={item.quantity <= 1}
                         >
@@ -87,7 +100,7 @@ const CartPage = ({ onNavigate }) => {
                         </button>
                         <span className="quantity-display">{item.quantity}</span>
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
                           className="quantity-btn"
                         >
                           <Plus size={16} />
@@ -152,7 +165,7 @@ const CartPage = ({ onNavigate }) => {
               </button>
               
               <button
-                onClick={() => onNavigate('home')}
+                onClick={() => navigate('/')}
                 className="continue-shopping-btn"
               >
                 Continuer mes achats

@@ -1,9 +1,34 @@
-import React from 'react';
-import { CheckCircle, Package, Truck, Home, Clock, Download, Phone, Mail } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CheckCircle, Package, Truck, Home, Clock, Phone, Mail } from 'lucide-react';
+import { getOrderDetails } from '../../actions/orderActions';
 
-const ConfirmationPage = ({ onNavigate, orderId }) => {
-  const { user } = useAuth();
+const ConfirmationPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const { user } = useSelector(state => state.auth);
+  const { order, loading } = useSelector(state => state.orderDetails);
+  
+  const [orderDetails, setOrderDetails] = useState(null);
+
+  // Get orderId
+  const orderId = location.state?.orderId;
+
+  // Fetch order details
+  useEffect(() => {
+    if (orderId) {
+      dispatch(getOrderDetails(orderId));
+    }
+  }, [dispatch, orderId]);
+
+  useEffect(() => {
+    if (order) {
+      setOrderDetails(order);
+    }
+  }, [order]);
 
   const steps = [
     { 
@@ -36,8 +61,32 @@ const ConfirmationPage = ({ onNavigate, orderId }) => {
     }
   ];
 
-  const estimatedDelivery = new Date();
-  estimatedDelivery.setDate(estimatedDelivery.getDate() + 3);
+  // Use actual order date for delivery estimation
+  const estimatedDelivery = orderDetails?.createdAt 
+    ? new Date(new Date(orderDetails.createdAt).getTime() + 3 * 24 * 60 * 60 * 1000)
+    : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+
+  // Use actual order status
+  const orderStatus = orderDetails?.orderStatus || 'Processing';
+
+  // Navigation handlers
+  const handleContinueShopping = () => {
+    navigate('/');
+  };
+
+  const handleViewOrders = () => {
+    navigate('/orders');
+  };
+
+  if (loading) {
+    return (
+      <div className="confirmation-page">
+        <div className="confirmation-container">
+          <div className="loading">Chargement des détails de la commande...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="confirmation-page">
@@ -113,7 +162,12 @@ const ConfirmationPage = ({ onNavigate, orderId }) => {
                 <div className="info-item">
                   <Package size={32} />
                   <h3>Statut</h3>
-                  <p className="status-text">En préparation</p>
+                  <p className="status-text">
+                    {orderStatus === 'Processing' && 'En traitement'}
+                    {orderStatus === 'Shipped' && 'Expédiée'}
+                    {orderStatus === 'Delivered' && 'Livrée'}
+                    {orderStatus === 'Cancelled' && 'Annulée'}
+                  </p>
                 </div>
                 
                 <div className="info-item">
@@ -129,7 +183,7 @@ const ConfirmationPage = ({ onNavigate, orderId }) => {
         {/* Actions */}
         <div className="action-buttons">
           <button
-            onClick={() => onNavigate('home')}
+            onClick={handleContinueShopping}
             className="action-btn-secondary"
           >
             <Home size={24} />
@@ -137,7 +191,7 @@ const ConfirmationPage = ({ onNavigate, orderId }) => {
           </button>
           
           <button
-            onClick={() => onNavigate('orders')}
+            onClick={handleViewOrders}
             className="action-btn-secondary"
           >
             <Package size={24} />
