@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, ChevronDown } from 'lucide-react';
+import { ShoppingCart, User, Search, ChevronDown, Menu, X } from 'lucide-react';
 import CategoriesNav from './CategoriesNav';
 import techStoreLogo from '../../assets/techstore.png';
 import { logout } from '../../actions/userActions';
@@ -11,6 +11,8 @@ const Header = ({ searchQuery, onSearchChange, selectedCategory, onCategoryChang
   const navigate = useNavigate();
   
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const dropdownRef = useRef(null);
 
   const { cartItems } = useSelector(state => state.cart);
@@ -27,6 +29,15 @@ const Header = ({ searchQuery, onSearchChange, selectedCategory, onCategoryChang
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleLogout = () => {
@@ -50,11 +61,29 @@ const Header = ({ searchQuery, onSearchChange, selectedCategory, onCategoryChang
     onSearchChange(query); 
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
+  const handleCategorySelect = (category) => {
+    onCategoryChange(category);
+    closeSidebar();
+  };
+
   const userInitials = user ? `${user.firstName?.charAt(0)}${user.lastName?.charAt(0)}` : '';
 
-  // Handle showing categories nav based on current route
   const currentPath = window.location.pathname;
   const showCategoriesNav = currentPath === '/' || currentPath.includes('/product');
+
+  // Show toggle for screens < 769px (mobile + tablet)
+  const showSidebarToggle = windowWidth < 769;
+  
+  // Show desktop navbar for screens ≥ 769px
+  const showDesktopNavbar = windowWidth >= 769;
 
   return (
     <header className="header">
@@ -178,11 +207,44 @@ const Header = ({ searchQuery, onSearchChange, selectedCategory, onCategoryChang
         </div>
       </div>
 
-      {showCategoriesNav && (
-        <CategoriesNav 
-          selectedCategory={selectedCategory}
-          onCategoryChange={onCategoryChange}
-        />
+      {/* Categories Navigation - Desktop (for screens ≥ 769px) */}
+      {showCategoriesNav && showDesktopNavbar && (
+        <div className="categories-navbar">
+          <CategoriesNav 
+            selectedCategory={selectedCategory}
+            onCategoryChange={onCategoryChange}
+          />
+        </div>
+      )}
+      
+      {/* Mobile/Tablet Sidebar Toggle (only for screens < 769px) */}
+      {showCategoriesNav && showSidebarToggle && (
+        <div className="categories-sidebar-container">
+          <button 
+            className="sidebar-toggle-btn"
+            onClick={toggleSidebar}
+            aria-label="Open categories menu"
+          >
+            <Menu size={24} />
+          </button>
+
+          <div className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`} onClick={closeSidebar} />
+
+          <div className={`categories-sidebar ${sidebarOpen ? 'active' : ''}`}>
+            <div className="sidebar-header">
+              <h3 className="sidebar-title">Catégories</h3>
+              <button className="sidebar-close-btn" onClick={closeSidebar}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <CategoriesNav 
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategorySelect}
+              isSidebar={true}
+            />
+          </div>
+        </div>
       )}
     </header>
   );

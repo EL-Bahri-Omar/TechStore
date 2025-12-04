@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CategoriesNav = ({ selectedCategory, onCategoryChange }) => {
+const CategoriesNav = ({ selectedCategory, onCategoryChange, isSidebar = false }) => {
   const categories = [
     'all',
     'Informatique',
@@ -37,20 +37,35 @@ const CategoriesNav = ({ selectedCategory, onCategoryChange }) => {
     Télévision: 'Télévision'
   };
 
-  return (
-    <div className="categories-navbar">
-      <div className="categories-navbar-container">
+  if (isSidebar) {
+    return (
+      <div className="categories-sidebar-content">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => onCategoryChange(cat)}
-            className={`category-nav-btn ${selectedCategory === cat ? 'active' : ''}`}
+            className={`sidebar-category-btn ${selectedCategory === cat ? 'active' : ''}`}
           >
-            <span className="category-nav-icon">{categoryIcons[cat]}</span>
-            <span className="category-nav-name">{categoryNames[cat]}</span>
+            <span className="sidebar-category-icon">{categoryIcons[cat]}</span>
+            <span className="sidebar-category-name">{categoryNames[cat]}</span>
           </button>
         ))}
       </div>
+    );
+  }
+
+  return (
+    <div className="categories-navbar-container">
+      {categories.map((cat) => (
+        <button
+          key={cat}
+          onClick={() => onCategoryChange(cat)}
+          className={`category-nav-btn ${selectedCategory === cat ? 'active' : ''}`}
+        >
+          <span className="category-nav-icon">{categoryIcons[cat]}</span>
+          <span className="category-nav-name">{categoryNames[cat]}</span>
+        </button>
+      ))}
     </div>
   );
 };
