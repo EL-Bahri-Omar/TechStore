@@ -32,7 +32,10 @@ exports.authLimiter = rateLimit({
 // CORS configuration
 exports.corsOptions = {
     origin: function (origin, callback) {
-        const allowedOrigins = process.env.ALLOWED_ORIGINS
+        const allowedOrigins = [
+            process.env.ALLOWED_ORIGINS,
+            process.env.BACKEND_ORIGIN
+        ].filter(Boolean);
         
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
