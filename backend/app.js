@@ -1,9 +1,24 @@
 const express = require('express');
 const app = express();
-const dotenv = require('dotenv');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
 const cors = require('cors');
+
+const swaggerUi = require('swagger-ui-express');
+const specs = require('./docs/swagger');
+
+// Swagger UI setup
+app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "TechStore API Documentation"
+}));
+
+// Redirect root API to docs
+app.get('/api/v1', (req, res) => {
+  res.redirect('/api/v1/docs');
+});
 
 // Import security middleware
 const { apiLimiter, corsOptions } = require('./middlewares/security');
@@ -21,20 +36,18 @@ app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Routes
+// ROUTES
 const products = require('./routes/product');
 const auth = require('./routes/auth');
-const favorites = require('./routes/favorites');
-const order = require('./routes/order');
 const payment = require('./routes/payment');
+const order = require('./routes/order');
+const favorites = require('./routes/favorites');
 
 app.use('/api/v1', products);
 app.use('/api/v1', auth);
-app.use('/api/v1', favorites);
-app.use('/api/v1', order);
 app.use('/api/v1', payment);
-
-// ERROR HANDLING //
+app.use('/api/v1', order);
+app.use('/api/v1', favorites);
 
 // Handle undefined routes
 app.all('*', (req, res, next) => {
